@@ -1,0 +1,104 @@
+from rest_framework import serializers
+from datetime import date
+import datetime
+from .models import Campania,Contacto,Medio,estado_campania,mediosxcampania,Tipo_medio
+from django.contrib.auth.validators import UnicodeUsernameValidator
+
+
+class CampañaSerializer(serializers.ModelSerializer):
+	Fecha_Creada = serializers.DateField(format="%d-%m-%Y",input_formats=['%d-%m-%Y',])
+	fechaFin = serializers.DateField(format="%d-%m-%Y",input_formats=['%d-%m-%Y',])
+	fechaInicio = serializers.DateField(format="%d-%m-%Y",input_formats=['%d-%m-%Y',])
+	duracion = serializers.IntegerField()
+	id = serializers.IntegerField(read_only=True)
+
+	class Meta:
+		model = Campania
+		fields = ['id','nombre','Fecha_Creada',
+			'fechaInicio','fechaFin','duracion','operador_ID','estado']
+
+	def create(self,validated_data):
+		f_ini,f_actual = validated_data['fechaInicio'],date.today()
+		if f_actual == f_ini:
+			validated_data['estado'] = estado_campania.objects.get(descripcion = 1)
+			#Llamar tarea con el id de la campaña
+		else:
+			validated_data['estado'] = estado_campania.objects.get(descripcion = 2)
+
+		return Campania.objects.create(**validated_data)
+
+
+
+class ContactosSerializer(serializers.ModelSerializer):
+	fecha_nacimiento = serializers.DateField(input_formats=['%d/%m/%Y'])
+	nombre = serializers.CharField(max_length=50)
+	class Meta:
+		model = Contacto
+		fields = ['identidad', 'nombre','fecha_nacimiento','celular','email','telefono']
+		extra_kwargs = {
+            'identidad': {
+                'validators': [UnicodeUsernameValidator()],
+            }
+        }
+
+	def create(self,validated_data):
+		return Contacto.objects.get_or_create(**validated_data)
+
+
+class MediaSerializer(serializers.ModelSerializer):
+	llamada_aud = serializers.FileField(allow_empty_file=True,required=False)
+	#email_asunt = serializers.CharField(allow_blank=True,required=False)
+	#email_cuerpo = serializers.CharField(allow_blank=True,required=False)
+	sms = serializers.CharField(allow_blank=True,source='sms_mensaje')
+	tipoMedio = serializers.IntegerField(source='tipo_medio')
+	intensidad = serializers.IntegerField()
+	Horas = serializers.ListField(child = serializers.TimeField())
+	campID = serializers.IntegerField()
+
+	class Meta:
+		model = Medio
+		fields = ['sms','tipoMedio','llamada_aud','intensidad','Horas','campID']
+	def create(self,validated_data):
+		i = validated_data['tipo_medio']
+		idcam = validated_data['campID']
+
+		validated_data['tipo_medio'] = Tipo_medio.objects.get(descripcion=i)
+		intensidadMed = (validated_data['intensidad'],validated_data['Horas'])
+
+		validated_data.pop('intensidad')
+		validated_data.pop('Horas')
+		validated_data.pop('campID')
+
+
+		medios = Medio.objects.create(**validated_data)
+		campania = Campania.objects.get(pk = idcam)
+		v = len(intensidadMed)
+		
+		i = intensidadMed
+		if i[0] == 1:
+			m = mediosxcampania.objects.create(campania_id=campania,
+				medio_id=medios,
+				intensidad=i[0],
+				hora1=i[1][0])
+			m.save()
+		elif i[0] == 2:
+			m = mediosxcampania.objects.create(campania_id=campania,
+				medio_id=medios,
+				intensidad=i[0],
+				hora1=i[1][0],hora2=i[1][1])
+			m.save()
+		else:
+			m = mediosxcampania.objects.create(campania_id=campania,
+				medio_id=medios,
+				intensidad=i[0],
+				hora1=i[1][0],hora2=i[1][1],hora3=i[1][2])
+			m.save()
+
+		return medios
+
+
+class contactosxcampSerializer(serializers.ModelSerializer):
+	id = serializers.CharField(source='medio_id.tipo_medio')
+	class Meta:
+		model = mediosxcampania
+		fields = ['id','intensidad']
