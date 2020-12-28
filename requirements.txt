@@ -1,0 +1,14 @@
+celery==5.0.5
+-e git+https://github.com/django/django.git@01974d7f7549b2dca2a729c3c1a1ea7d4585eb3a#egg=Django
+django-celery-beat==2.1.0
+django-cors-headers==3.6.0
+django-crontab==0.7.1
+django-timezone-field==4.1.1
+djangorestframework==3.12.1
+gunicorn==20.0.4
+psycopg2==2.8.6
+python-crontab==2.5.1
+python-dotenv==0.15.0
+pytz==2020.1
+redis==3.5.3
+twilio==6.50.1
