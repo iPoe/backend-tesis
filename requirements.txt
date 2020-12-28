@@ -13,3 +13,4 @@ pytz==2020.1
 redis==3.5.3
 twilio==6.50.1
 whitenoise==5.2.0
+Pillow==8.0.1
