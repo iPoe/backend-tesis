@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 
 
@@ -117,10 +123,10 @@ WSGI_APPLICATION = 'salud_publica.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'Salud',
-        'USER':'leonardo',
-        'HOST':'localhost',
-        'PASSWORD':'121284',
+        'NAME': os.environ.get("postdbName"),
+        'USER':os.environ.get("post_user"),
+        'HOST':os.environ.get("postHost"),
+        'PASSWORD':os.environ.get("post_password"),
         'PORT': '5432',
     }
 }
@@ -171,12 +177,7 @@ CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-import os
-from os.path import join, dirname
-from dotenv import load_dotenv
 
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
 
 TID  = os.environ.get("twilio_account_sid")
 T_AUTH_TOKEN = os.environ.get("twilio_auth_token")
