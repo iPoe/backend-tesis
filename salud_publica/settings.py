@@ -21,7 +21,7 @@ load_dotenv(dotenv_path)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
@@ -86,7 +86,7 @@ CORS_ALLOW_HEADERS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    #'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -95,6 +95,7 @@ MIDDLEWARE = [
     #Cors para permitir peticiones desde todas partes
     'django.middleware.common.CommonMiddleware', #Cors
     'corsheaders.middleware.CorsMiddleware', # Cors
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'salud_publica.urls'
@@ -168,9 +169,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 MEDIA_ROOT = 'media'
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR,'static')
-
-
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 
 #Celery settings
