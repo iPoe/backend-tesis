@@ -123,10 +123,10 @@ WSGI_APPLICATION = 'salud_publica.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ["postdbName"],
-        'USER':os.environ["post_user"],
-        'HOST':os.environ["postHost"],
-        'PASSWORD':os.environ["post_password"],
+        'NAME': os.environ.get("postdbName"),
+        'USER':os.environ.get("post_user"),
+        'HOST':os.environ.get("postHost"),
+        'PASSWORD':os.environ.get("post_password"),
         'PORT': '5432',
     }
 }
@@ -176,11 +176,11 @@ STATIC_ROOT = os.path.join(BASE_DIR,'static')
 #Celery settings
 
 CELERY_BROKER_URL = os.environ["REDIS_URL"]
-CELERY_RESULT_BACKEND = os.environ["REDIS_URL"]
+CELERY_RESULT_BACKEND = os.environ.["REDIS_URL"]
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 
 
-TID  = os.environ["twilio_account_sid"]
-T_AUTH_TOKEN = os.environ["twilio_auth_token"]
-TNUMBER = os.environ["twilio_number"]
+TID  = os.environ.get("twilio_account_sid")
+T_AUTH_TOKEN = os.environ.get("twilio_auth_token")
+TNUMBER = os.environ.get("twilio_number")
