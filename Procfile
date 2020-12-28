@@ -1,2 +1,2 @@
 web : gunicorn salud_publica.wsgi --log-file -
-worker : celery -A salud_publica worker --loglevel=info
+worker : celery worker --app salud_publica.celery.app --loglevel info
