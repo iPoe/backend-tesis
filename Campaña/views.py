@@ -125,7 +125,7 @@ def campania_view(request):
 		return JsonResponse(data,status=201,safe=False)
 
 	elif request.method == 'POST':
-		mediosdata = request.data['medios']
+		#mediosdata = request.data['medios']
 		CampaniaConf = Camp_setup(request.data)
 		if CampaniaConf.serializerCampania.is_valid():
 			a = CampaniaConf.guardarContactos()
@@ -136,7 +136,7 @@ def campania_view(request):
 		else:
 
 			print("Se cometieron errores :c")
-			print(r)
+			print(CampaniaConf.serializerCampania.errors)
 
 		return JsonResponse(CampaniaConf.serializerCampania.errors,status=400,safe=False)
 	else:
