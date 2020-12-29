@@ -28,12 +28,10 @@ class Camp_setup:
             self.camp.save()
             if self.camp.estado.descripcion == 1:
                 print("ENTRO",self.camp.id)
-                #crearTaskxmedioxcamp(self.camp.id)
-            #print(serializerContactos.data)
             contactos = self.serializerContactos.save()
             objs = [contactosxcampa(
                 campania = self.camp,
-                contacto =c[0],nombreContactos=self.datacamp['nombreContactos'])
+                contacto =c,nombreContactos=self.datacamp['nombreContactos'])
                 for c in contactos
             ]
             contactosxcampa.objects.bulk_create(objs)
