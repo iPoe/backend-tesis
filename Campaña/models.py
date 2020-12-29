@@ -29,7 +29,7 @@ class Campania(models.Model):
 		return self.nombre
 
 class Contacto(models.Model):
-	identidad = models.IntegerField(primary_key=True)
+	identidad = models.CharField(primary_key=True,max_length=50)
 	nombre = models.CharField(max_length=50)
 	fecha_nacimiento = models.DateField(default=None)
 	celular = models.CharField(default=None,max_length=10)
