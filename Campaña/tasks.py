@@ -64,7 +64,7 @@ def llamar_usuarias(ID,mId,tel=''):
     fechaActual = date.today()
     numerosUsuarias = ["+57"+tel+obj.contacto.celular for obj in cons]
     if tel != '':
-        numerosUsuarias = ["+57"+tel+obj.contacto.telefono for obj in cons]
+        numerosUsuarias = ["+57"+obj.contacto.telefono for obj in cons]
 
     mensajeVoz = m.sms_mensaje
     #mensajeVoz = '¡Hola! Te llamamos desde Salud Pública, queremos darte la bienvenida a las nueva era digital de las llamadas automáticas, es un placer para mi hablarte, deseo que pronto nos conozcamos, ¡Muchas gracias! Y te deseo una Feliz Navidad y Próspero año nuevo, ¡Hasta luego y lindo día!'
