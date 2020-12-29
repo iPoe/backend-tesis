@@ -42,7 +42,10 @@ class ContactosSerializer(serializers.ModelSerializer):
         }
 
 	def create(self,validated_data):
-		contacto, created = Contacto.objects.update_or_create(identidad=validated_data['identidad'],defaults={"nombre":validated_data['nombre']})
+		contacto, created = Contacto.objects.update_or_create(identidad=validated_data['identidad'],
+			fecha_nacimiento=validated_data['fecha_nacimiento'],email = validated_data['email'],
+			celular=validated_data['celular'],telefono = validated_data['telefono'],
+			defaults={"nombre":validated_data['nombre'],"celular":validated_data['celular'],"telefono":validated_data['telefono']})
 		return contacto
 
 
