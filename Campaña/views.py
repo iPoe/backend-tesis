@@ -78,34 +78,47 @@ def get_campanias(request):
 
 @api_view(['PUT'])
 def updateCamp(request):
-	if request.method == 'PUT':
-		dataCamp = request.data
-		fIni = dt.datetime.strptime(dataCamp['fechaInicio'], "%d-%m-%Y")
-		fFini = dt.datetime.strptime(dataCamp['fechaFin'], "%d-%m-%Y")
+	try:
+		with transaction.atomic():
+			if request.method == 'PUT':
+				dataCamp = request.data
+				fIni = dt.datetime.strptime(dataCamp['fechaInicio'], "%d-%m-%Y")
+				fFini = dt.datetime.strptime(dataCamp['fechaFin'], "%d-%m-%Y")
 
-		Campania.objects.filter(pk=dataCamp['id']).update(nombre = dataCamp['nombre'],fechaInicio=fIni,
-		fechaFin=fFini,duracion=int(dataCamp['duracion']))
-		#a.save()
-		change_estado_campania(dataCamp['id'])
-		c = Campania.objects.get(pk = dataCamp['id'])
-		if c.estado.descripcion == 1 and len(c.tasksIds)==0:
-			crearTaskxmedioxcamp(c.id)
-		sercamp = CampañaSerializer(c)
-		data = sercamp.data
-		return JsonResponse(data,status=201,safe=False)
+				Campania.objects.filter(pk=dataCamp['id']).update(nombre = dataCamp['nombre'],fechaInicio=fIni,
+				fechaFin=fFini,duracion=int(dataCamp['duracion']))
+				#a.save()
+				change_estado_campania(dataCamp['id'])
+				c = Campania.objects.get(pk = dataCamp['id'])
+				if c.estado.descripcion == 1 and len(c.tasksIds)==0:
+					crearTaskxmedioxcamp(c.id)
+				sercamp = CampañaSerializer(c)
+				data = sercamp.data
+				return JsonResponse(data,status=201,safe=False)
+	except Exception as e:
+		print(e)
+		return JsonResponse("Error en actualizar camp",status=400,safe=False)
+
 
 @api_view(['PUT'])
 def endCamp(request):
 	if request.method == 'PUT':
-		dataCamp = request.data
-		c = Campania.objects.get(pk = dataCamp['id'])
-		fFini,e = dt.datetime.strptime(dataCamp['fechaFin'], "%d-%m-%Y"),estado_campania.objects.get(descripcion=3)
-		Campania.objects.filter(pk=dataCamp['id']).update(tasksIds = c.tasksIds,estado = e, fechaFin=fFini,duracion=int(dataCamp['duracion']))
-		if c.estado.descripcion == 1:
-			disableTaskxCamp(dataCamp['id'])
-		sercamp = CampañaSerializer(c)
-		data = sercamp.data
-		return JsonResponse(data,status=201,safe=False)
+		try:
+			with transaction.atomic():
+				dataCamp = request.data
+				c = Campania.objects.get(pk = dataCamp['id'])
+				fFini,e = dt.datetime.strptime(dataCamp['fechaFin'], "%d-%m-%Y"),estado_campania.objects.get(descripcion=3)
+				Campania.objects.filter(pk=dataCamp['id']).update(tasksIds = c.tasksIds,estado = e, fechaFin=fFini,duracion=int(dataCamp['duracion']))
+				if c.estado.descripcion == 1:
+					disableTaskxCamp(dataCamp['id'])
+				sercamp = CampañaSerializer(c)
+				data = sercamp.data
+				return JsonResponse(data,status=201,safe=False)
+
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error en finalizar camp",status=400,safe=False)
+
 
 
 
@@ -124,16 +137,23 @@ def campania_view(request):
 			estado_campaña(camp.id)
 
 	elif request.method=='GET':
-		campanias = Campania.objects.all()
-		serializer = CampañaSerializer(campanias,many=True)
-		data = serializer.data
-		for x in data:
-			mxc = mediosxcampania.objects.filter(campania_id=x['id'])
-			x.pop('operador_ID')
-			x.pop('Fecha_Creada')
-			medioSerializer = contactosxcampSerializer(mxc,many=True)
-			x['medios'] = medioSerializer.data
-		return JsonResponse(data,status=201,safe=False)
+		try:
+			with transaction.atomic():
+				campanias = Campania.objects.all()
+				serializer = CampañaSerializer(campanias,many=True)
+				data = serializer.data
+				for x in data:
+					mxc = mediosxcampania.objects.filter(campania_id=x['id'])
+					x.pop('operador_ID')
+					x.pop('Fecha_Creada')
+					medioSerializer = contactosxcampSerializer(mxc,many=True)
+					x['medios'] = medioSerializer.data
+				return JsonResponse(data,status=201,safe=False)
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error en obtener camp",status=400,safe=False)
+
+
 
 	elif request.method == 'POST':
 		try:
@@ -164,48 +184,60 @@ def usuarias_existentes(request):
 @api_view(['POST'])
 def save_result(request):
 	if request.method == 'POST':
-		data,textRes = request.data,"no"
-		idres = int(data['idLlamada'])
-		if data['res'] == 'completed' or data['res'] == 'delivered':
-			textRes = "si"
-		tipoRes = Tipo_resultado.objects.get(descripcion = textRes)
-		res = resultadosxcampania.objects.update_or_create(pk = idres,defaults={'Tipo_resultado':tipoRes})
-		return JsonResponse("Update completed",status=201,safe=False)
+		try:
+			with transaction.atomic():
+				data,textRes = request.data,"no"
+				idres = int(data['idLlamada'])
+				if data['res'] == 'completed' or data['res'] == 'delivered':
+					textRes = "si"
+				tipoRes = Tipo_resultado.objects.get(descripcion = textRes)
+				res = resultadosxcampania.objects.update_or_create(pk = idres,defaults={'Tipo_resultado':tipoRes})
+				return JsonResponse("Update completed",status=201,safe=False)
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
+
 
 
 @api_view(['POST'])
 def login_operador(request):
 	if request.method == 'POST':
-		data = request.data
-		correo,password = data['email'],data['clave']
-		
-		operador = Operador.objects.filter(email = correo)
-		
-		if len(password)!=0 and len(operador)>0:
-			
-			if password != operador[0].clave:
+		try:
+			with transaction.atomic():
+
+				data = request.data
+				correo,password = data['email'],data['clave']
 				
-				data = {
-				'error':'Contraseña incorrecta',
-				}
-				return Response(data,status=400)
-
-			else:
-				data = {
-				'email':correo,
-				'id': operador[0].id,
-				'token': 'beaker 123456789'
+				operador = Operador.objects.filter(email = correo)
 				
+				if len(password)!=0 and len(operador)>0:
+					
+					if password != operador[0].clave:
+						
+						data = {
+						'error':'Contraseña incorrecta',
+						}
+						return Response(data,status=400)
 
-				}
-				return Response(data)
+					else:
+						data = {
+						'email':correo,
+						'id': operador[0].id,
+						'token': 'beaker 123456789'
+						
 
-		else:
-			data = {
-			'error': 'Correo o contraseña incorrectos',
+						}
+						return Response(data)
 
-			}
-			return Response(data,status=400)
+				else:
+					data = {
+					'error': 'Correo o contraseña incorrectos',
+
+					}
+					return Response(data,status=400)
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error al iniciar sesion",status=400,safe=False)
 
 
 def auxHMedio(idm):
@@ -227,67 +259,73 @@ def auxHMedio(idm):
 @api_view(['POST'])
 def estadisticas_campaña(request):
 	if request.method == 'POST':
-		data =  request.data
-		idcamp = int(data['id'])
-		campania = Campania.objects.get(pk = idcamp)
-		serializer = CampañaSerializer(campania)
-		dataest = serializer.data
-		users = contactosxcampa.objects.filter(campania=campania)
-		dataest['nombreContactos'] = users[0].nombreContactos
-		mxc = mediosxcampania.objects.filter(campania_id=campania)
-		dataest.pop('operador_ID')
-		dataest.pop('Fecha_Creada')
-		lista_medios = list()
-		for m in mxc:
-			dicMedio = {
-				"tipoMedio":m.medio_id.tipo_medio.descripcion,
-            "sms": m.medio_id.sms_mensaje,
-            "intensidad": m.intensidad,
-            "Horas": auxHMedio(m.id)
-			}
-			lista_medios.append(dicMedio)
+		try:
+			with transaction.atomic():
 
-		dataest['medios'] = lista_medios
+				data =  request.data
+				idcamp = int(data['id'])
+				campania = Campania.objects.get(pk = idcamp)
+				serializer = CampañaSerializer(campania)
+				dataest = serializer.data
+				users = contactosxcampa.objects.filter(campania=campania)
+				dataest['nombreContactos'] = users[0].nombreContactos
+				mxc = mediosxcampania.objects.filter(campania_id=campania)
+				dataest.pop('operador_ID')
+				dataest.pop('Fecha_Creada')
+				lista_medios = list()
+				for m in mxc:
+					dicMedio = {
+						"tipoMedio":m.medio_id.tipo_medio.descripcion,
+		            "sms": m.medio_id.sms_mensaje,
+		            "intensidad": m.intensidad,
+		            "Horas": auxHMedio(m.id)
+					}
+					lista_medios.append(dicMedio)
 
-		#Sacar las estadisticas por usuarias
-		statxUsuarias = list()
-		fini,fechaAct = campania.fechaInicio,date.today()
+				dataest['medios'] = lista_medios
+
+				#Sacar las estadisticas por usuarias
+				statxUsuarias = list()
+				fini,fechaAct = campania.fechaInicio,date.today()
 
 
-		if campania.estado.descripcion == 1:
-			#print(campania)
-			userscamp = contactosxcampa.objects.filter(campania=campania)
-			
-			for u in userscamp:
-				#print(u)
-				i = 1				
-				strMedio = "medio_{}".format(i)
-				contSer = ContactosSerializer(u.contacto)
-				diccont = contSer.data
-				fechanueva = campania.fechaInicio
-				dicresmed = {}
-				while fechanueva <= fechaAct:				
-					for m in mxc:
-						resMed = []
-						res = resultadosxcampania.objects.filter(contacto_cc = u.contacto,
-						campania_id=campania,fecha=fechanueva,medio_id=m.medio_id).values('Tipo_resultado')
-						#print(res)	
-						if len(res)!=0:
-							resMed = [r['Tipo_resultado'] for r in res]
-							for txt in resMed:
-								txtaux = "Si"
-								if txt == None:
-										txtaux = ""
-								elif txt == 2:
-										txtaux = "No"
-								diccont[strMedio] = txtaux
-								i += 1
-								strMedio = "medio_{}".format(i)
+				if campania.estado.descripcion == 1:
+					#print(campania)
+					userscamp = contactosxcampa.objects.filter(campania=campania)
+					
+					for u in userscamp:
+						#print(u)
+						i = 1				
+						strMedio = "medio_{}".format(i)
+						contSer = ContactosSerializer(u.contacto)
+						diccont = contSer.data
+						fechanueva = campania.fechaInicio
+						dicresmed = {}
+						while fechanueva <= fechaAct:				
+							for m in mxc:
+								resMed = []
+								res = resultadosxcampania.objects.filter(contacto_cc = u.contacto,
+								campania_id=campania,fecha=fechanueva,medio_id=m.medio_id).values('Tipo_resultado')
+								#print(res)	
+								if len(res)!=0:
+									resMed = [r['Tipo_resultado'] for r in res]
+									for txt in resMed:
+										txtaux = "Si"
+										if txt == None:
+												txtaux = ""
+										elif txt == 2:
+												txtaux = "No"
+										diccont[strMedio] = txtaux
+										i += 1
+										strMedio = "medio_{}".format(i)
 
-					d = fechanueva.day
-					fechanueva = fechanueva.replace(day = d + 1)
-				statxUsuarias.append(diccont)
-			dataest['estadistica'] = statxUsuarias
+							d = fechanueva.day
+							fechanueva = fechanueva.replace(day = d + 1)
+						statxUsuarias.append(diccont)
+					dataest['estadistica'] = statxUsuarias
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error al generar estadistica",status=400,safe=False)
 
 
 
