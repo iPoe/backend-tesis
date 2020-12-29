@@ -93,7 +93,11 @@ def camp_activa(campId):
     camp = Campania.objects.get(pk = campId)
     estado = False 
     if camp.fechaInicio == fechaActual:
+        e = estado_campania.objects.get(descripcion=1)
+        camp.estado = e
+        camp.save()
         estado = True
+
     return estado
 
 def auxIntensidadMedio(campId,intensidad,medioxc):
