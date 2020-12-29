@@ -289,7 +289,7 @@ def estadisticas_campaña(request):
 				fini,fechaAct = campania.fechaInicio,date.today()
 
 
-				if campania.estado.descripcion == 1:
+				if campania.estado.descripcion == 1  or campania.estado.descripcion == 3:
 					#print(campania)
 					userscamp = contactosxcampa.objects.filter(campania=campania)
 					
