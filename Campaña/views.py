@@ -7,6 +7,7 @@ from rest_framework import status
 from datetime import date
 import datetime as dt
 from django.db.models import Count
+from django.db import transaction
 
 
 #1cel,2tel,correo3,sms4,wp5
@@ -136,14 +137,15 @@ def campania_view(request):
 
 	elif request.method == 'POST':
 		try:
-			mediosdata = request.data['medios']
-			CampaniaConf = Camp_setup(request.data)
-			if CampaniaConf.serializerCampania.is_valid():
-				a = CampaniaConf.guardarContactos()
-				r = CampaniaConf.guardarMedios(a,mediosdata)
-				if CampaniaConf.camp.estado.descripcion == 1:
-					crearTaskxmedioxcamp(a)
-				return JsonResponse(CampaniaConf.serializerCampania.data,status=201,safe=False)
+			with transaction.atomic():
+				mediosdata = request.data['medios']
+				CampaniaConf = Camp_setup(request.data)
+				if CampaniaConf.serializerCampania.is_valid():
+					a = CampaniaConf.guardarContactos()
+					r = CampaniaConf.guardarMedios(a,mediosdata)
+					if CampaniaConf.camp.estado.descripcion == 1:
+						crearTaskxmedioxcamp(a)
+					return JsonResponse(CampaniaConf.serializerCampania.data,status=201,safe=False)
 
 			#return JsonResponse(CampaniaConf.serializerCampania.errors,status=400,safe=False)
 		except Exception as e:

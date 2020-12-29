@@ -37,12 +37,13 @@ class ContactosSerializer(serializers.ModelSerializer):
 		fields = ['identidad', 'nombre','fecha_nacimiento','celular','email','telefono']
 		extra_kwargs = {
             'identidad': {
-                'validators': [UnicodeUsernameValidator()],
+                'validators': [],
             }
         }
 
 	def create(self,validated_data):
-		return Contacto.objects.update_or_create(**validated_data)
+		contacto, created = Contacto.objects.update_or_create(identidad=validated_data['identidad'],defaults={"nombre":validated_data['nombre']})
+		return contacto
 
 
 class MediaSerializer(serializers.ModelSerializer):
