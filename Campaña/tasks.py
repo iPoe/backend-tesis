@@ -63,7 +63,7 @@ def llamar_usuarias(ID,mId,tel=''):
     m = Medio.objects.get(pk=mId)
     
     fechaActual = date.today()
-    numerosUsuarias = ["+57"+tel+obj.contacto.celular for obj in cons]
+    numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
     if tel == 1:
         numerosUsuarias = ["+57"+obj.contacto.telefono for obj in cons]
 
