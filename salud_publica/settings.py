@@ -174,8 +174,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 #Celery settings
 
-CELERY_BROKER_URL = os.environ["REDIS_URL"]
-CELERY_RESULT_BACKEND = os.environ["REDIS_URL"]
+CELERY_BROKER_URL = os.environ["redisURI"]
+CELERY_RESULT_BACKEND = os.environ["redisURI"]
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 
