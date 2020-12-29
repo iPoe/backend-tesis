@@ -42,7 +42,7 @@ class ContactosSerializer(serializers.ModelSerializer):
         }
 
 	def create(self,validated_data):
-		return Contacto.objects.get_or_create(**validated_data)
+		return Contacto.objects.update_or_create(**validated_data)
 
 
 class MediaSerializer(serializers.ModelSerializer):

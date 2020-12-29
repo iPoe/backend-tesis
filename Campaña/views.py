@@ -31,39 +31,49 @@ def change_estado_campania(ID):
 
 @api_view(['GET'])
 def recuento_camp(request):
-	data = {
-		'finalizadas':0,
-		'programadas':0,
-		'activas':0,
-		'total': Campania.objects.count()
-	}
-	query = Campania.objects.all().values('estado').annotate(total=Count('estado')).order_by('total')
-	for e in query:
-		if e['estado'] == 3:
-			data['finalizadas'] = e['total']
-		elif e['estado'] == 2:
-			data['programadas'] = e['total']
-		else:
-			data['activas'] = e['total']
-	return JsonResponse(data,status=201,safe=False)
+	try:		
+		data = {
+			'finalizadas':0,
+			'programadas':0,
+			'activas':0,
+			'total': Campania.objects.count()
+		}
+		query = Campania.objects.all().values('estado').annotate(total=Count('estado')).order_by('total')
+		for e in query:
+			if e['estado'] == 3:
+				data['finalizadas'] = e['total']
+			elif e['estado'] == 2:
+				data['programadas'] = e['total']
+			else:
+				data['activas'] = e['total']
+		return JsonResponse(data,status=201,safe=False)
+	except Exception as e:
+		print(e)
+		return JsonResponse("Error en la URL de recuento",status=400,safe=False)
+
 	
 
 
 @api_view(['GET'])
 def get_campanias(request):
-	if request.method == 'GET':
-		campanias = Campania.objects.all()
-		serializer = CampañaSerializer(campanias,many=True)
-		data = serializer.data
-		for x in data:
-			mxc = mediosxcampania.objects.filter(campania_id=x['id'])
-			x.pop('operador_ID')
-			x.pop('Fecha_Creada')
-			if len(mxc)>0:
-				medioSerializer = contactosxcampSerializer(mxc,many=True)
-				x['medios'] = medioSerializer.data
-				
-		return JsonResponse(data,status=201,safe=False)
+	try:
+		if request.method == 'GET':
+			campanias = Campania.objects.all()
+			serializer = CampañaSerializer(campanias,many=True)
+			data = serializer.data
+			for x in data:
+				mxc = mediosxcampania.objects.filter(campania_id=x['id'])
+				x.pop('operador_ID')
+				x.pop('Fecha_Creada')
+				if len(mxc)>0:
+					medioSerializer = contactosxcampSerializer(mxc,many=True)
+					x['medios'] = medioSerializer.data
+					
+			return JsonResponse(data,status=201,safe=False)
+	except Exception as e:
+		print(e)
+		return JsonResponse("Error al obtener recuento campañas",status=201,safe=False)
+
 
 @api_view(['PUT'])
 def updateCamp(request):
@@ -125,22 +135,20 @@ def campania_view(request):
 		return JsonResponse(data,status=201,safe=False)
 
 	elif request.method == 'POST':
-		mediosdata = request.data['medios']
-		CampaniaConf = Camp_setup(request.data)
-		if CampaniaConf.serializerCampania.is_valid():
-			a = CampaniaConf.guardarContactos()
-			r = CampaniaConf.guardarMedios(a,mediosdata)
-			if CampaniaConf.camp.estado.descripcion == 1:
-				crearTaskxmedioxcamp(a)
-			return JsonResponse(CampaniaConf.serializerCampania.data,status=201,safe=False)
-		else:
+		try:
+			mediosdata = request.data['medios']
+			CampaniaConf = Camp_setup(request.data)
+			if CampaniaConf.serializerCampania.is_valid():
+				a = CampaniaConf.guardarContactos()
+				r = CampaniaConf.guardarMedios(a,mediosdata)
+				if CampaniaConf.camp.estado.descripcion == 1:
+					crearTaskxmedioxcamp(a)
+				return JsonResponse(CampaniaConf.serializerCampania.data,status=201,safe=False)
 
-			print("Se cometieron errores :c")
-			print(CampaniaConf.serializerCampania.errors)
-
-		return JsonResponse(CampaniaConf.serializerCampania.errors,status=400,safe=False)
-	else:
-		print(":D")
+			#return JsonResponse(CampaniaConf.serializerCampania.errors,status=400,safe=False)
+		except Exception as e:
+			print(e)
+			return JsonResponse(CampaniaConf.serializerCampania.errors,status=400,safe=False)
 
 
 
