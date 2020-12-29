@@ -29,6 +29,7 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
         )
         idTask.append(sms_camp.id)
     elif m.tipo_medio.descripcion == 2:
+        tel = 1
         schedule = customSchedule(hora,minute)
         llamadaTel= PeriodicTask.objects.create(
             crontab=schedule,            
@@ -63,7 +64,7 @@ def llamar_usuarias(ID,mId,tel=''):
     
     fechaActual = date.today()
     numerosUsuarias = ["+57"+tel+obj.contacto.celular for obj in cons]
-    if tel != '':
+    if tel == 1:
         numerosUsuarias = ["+57"+obj.contacto.telefono for obj in cons]
 
     mensajeVoz = m.sms_mensaje
