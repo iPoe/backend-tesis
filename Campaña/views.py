@@ -343,11 +343,11 @@ def test_estadisticas(request):
 			'medio_id','Tipo_resultado').order_by('contacto_cc','medio_id')
 			print(resultadosCampania)
 			contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
-			i = 1
+			i,flag,size = 1,0,len(resultadosCampania)
 			dicresxmed = {}
 			for res in resultadosCampania:
 				contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])
-				if res['contacto_cc']!= contacantiguo:
+				if res['contacto_cc']!= contacantiguo or flag == size:
 					contSer = ContactosSerializer(Contacto.objects.get(identidad=contactoActual))
 					diccont = contSer.data
 					dicfinal = {**diccont,**dicresxmed}
@@ -356,6 +356,7 @@ def test_estadisticas(request):
 				strMedio = "medio_{}".format(i)
 				dicresxmed[strMedio] = "si" if res['Tipo_resultado'] == 1 else "no"
 				contacantiguo,i = res['contacto_cc'],i+1
+				flag+=1
 				#listausers.append(dicresxmed)
 
 			
