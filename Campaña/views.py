@@ -370,7 +370,7 @@ def test_estadisticas(request):
 			contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
 			i = 1
 			dicresxmed = {}
-			if len(res) > 0:
+			if len(resultadosCampania) > 0:
 				for res in resultadosCampania:
 					contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
 					if res['contacto_cc']!= contacantiguo:
