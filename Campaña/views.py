@@ -256,81 +256,81 @@ def auxHMedio(idm):
 
 
 
-@api_view(['POST'])
-def estadisticas_campaña(request):
-	if request.method == 'POST':
-		try:
-			with transaction.atomic():
+# @api_view(['POST'])
+# def estadisticas_campaña(request):
+# 	if request.method == 'POST':
+# 		try:
+# 			with transaction.atomic():
 
-				data =  request.data
-				idcamp = int(data['id'])
-				campania = Campania.objects.get(pk = idcamp)
-				serializer = CampañaSerializer(campania)
-				dataest = serializer.data
-				users = contactosxcampa.objects.filter(campania=campania)
-				dataest['nombreContactos'] = users[0].nombreContactos
-				mxc = mediosxcampania.objects.filter(campania_id=campania)
-				dataest.pop('operador_ID')
-				dataest.pop('Fecha_Creada')
-				lista_medios = list()
-				for m in mxc:
-					dicMedio = {
-						"tipoMedio":m.medio_id.tipo_medio.descripcion,
-		            "sms": m.medio_id.sms_mensaje,
-		            "intensidad": m.intensidad,
-		            "Horas": auxHMedio(m.id)
-					}
-					lista_medios.append(dicMedio)
+# 				data =  request.data
+# 				idcamp = int(data['id'])
+# 				campania = Campania.objects.get(pk = idcamp)
+# 				serializer = CampañaSerializer(campania)
+# 				dataest = serializer.data
+# 				users = contactosxcampa.objects.filter(campania=campania)
+# 				dataest['nombreContactos'] = users[0].nombreContactos
+# 				mxc = mediosxcampania.objects.filter(campania_id=campania)
+# 				dataest.pop('operador_ID')
+# 				dataest.pop('Fecha_Creada')
+# 				lista_medios = list()
+# 				for m in mxc:
+# 					dicMedio = {
+# 						"tipoMedio":m.medio_id.tipo_medio.descripcion,
+# 		            "sms": m.medio_id.sms_mensaje,
+# 		            "intensidad": m.intensidad,
+# 		            "Horas": auxHMedio(m.id)
+# 					}
+# 					lista_medios.append(dicMedio)
 
-				dataest['medios'] = lista_medios
+# 				dataest['medios'] = lista_medios
 
-				#Sacar las estadisticas por usuarias
-				statxUsuarias = list()
-				fini,fechaAct = campania.fechaInicio,date.today()
+# 				#Sacar las estadisticas por usuarias
+# 				statxUsuarias = list()
+# 				fini,fechaAct = campania.fechaInicio,date.today()
 
 
-				if campania.estado.descripcion == 1  or campania.estado.descripcion == 3:
-					#print(campania)
-					userscamp = contactosxcampa.objects.filter(campania=campania)
+# 				if campania.estado.descripcion == 1  or campania.estado.descripcion == 3:
+# 					#print(campania)
+# 					userscamp = contactosxcampa.objects.filter(campania=campania)
 					
-					for u in userscamp:
-						#print(u)
-						i = 1				
-						strMedio = "medio_{}".format(i)
-						contSer = ContactosSerializer(u.contacto)
-						diccont = contSer.data
-						fechanueva = campania.fechaInicio
-						dicresmed = {}
-						while fechanueva <= fechaAct and fechanueva <= campania.fechaFin:				
-							for m in mxc:
-								resMed = []
-								res = resultadosxcampania.objects.filter(contacto_cc = u.contacto,
-								campania_id=campania,fecha=fechanueva,medio_id=m.medio_id).values('Tipo_resultado')
-								#print(res)	
-								if len(res)!=0:
-									resMed = [r['Tipo_resultado'] for r in res]
-									for txt in resMed:
-										txtaux = "Si"
-										if txt == None:
-												txtaux = ""
-										elif txt == 2:
-												txtaux = "No"
-										diccont[strMedio] = txtaux
-										i += 1
-										strMedio = "medio_{}".format(i)
+# 					for u in userscamp:
+# 						#print(u)
+# 						i = 1				
+# 						strMedio = "medio_{}".format(i)
+# 						contSer = ContactosSerializer(u.contacto)
+# 						diccont = contSer.data
+# 						fechanueva = campania.fechaInicio
+# 						dicresmed = {}
+# 						while fechanueva <= fechaAct and fechanueva <= campania.fechaFin:				
+# 							for m in mxc:
+# 								resMed = []
+# 								res = resultadosxcampania.objects.filter(contacto_cc = u.contacto,
+# 								campania_id=campania,fecha=fechanueva,medio_id=m.medio_id).values('Tipo_resultado')
+# 								#print(res)	
+# 								if len(res)!=0:
+# 									resMed = [r['Tipo_resultado'] for r in res]
+# 									for txt in resMed:
+# 										txtaux = "Si"
+# 										if txt == None:
+# 												txtaux = ""
+# 										elif txt == 2:
+# 												txtaux = "No"
+# 										diccont[strMedio] = txtaux
+# 										i += 1
+# 										strMedio = "medio_{}".format(i)
 
-							d = fechanueva.day
-							fechanueva = fechanueva.replace(day = d + 1)
-						statxUsuarias.append(diccont)
-					dataest['estadistica'] = statxUsuarias
-		except Exception as e:
-			print(e)
-			return JsonResponse("Error al generar estadistica",status=400,safe=False)
+# 							d = fechanueva.day
+# 							fechanueva = fechanueva.replace(day = d + 1)
+# 						statxUsuarias.append(diccont)
+# 					dataest['estadistica'] = statxUsuarias
+# 		except Exception as e:
+# 			print(e)
+# 			return JsonResponse("Error al generar estadistica",status=400,safe=False)
 
 
 
 				
-		return JsonResponse(dataest,status=201,safe=False)
+# 		return JsonResponse(dataest,status=201,safe=False)
 
 def estaux(idcamp):
 	campania = Campania.objects.get(pk = idcamp)
@@ -366,7 +366,7 @@ def test_estadisticas(request):
 			campania,dataest = Campania.objects.get(pk = idcampania),estaux(idcampania)
 			resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc',
 			'medio_id','Tipo_resultado').order_by('contacto_cc','medio_id')
-			print(resultadosCampania)
+			#print(resultadosCampania)
 			contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
 			i = 1
 			dicresxmed = {}
@@ -380,7 +380,7 @@ def test_estadisticas(request):
 						listausers.append(dicfinal)
 						dicresxmed,i = {},1
 					strMedio = "medio_{}".format(i)
-					dicresxmed[strMedio] = "si" if res['Tipo_resultado'] == 1 else "no"
+					dicresxmed[strMedio] = "Si" if res['Tipo_resultado'] == 1 else "No"
 					contacantiguo = res['contacto_cc']
 					i+=1
 
@@ -396,6 +396,6 @@ def test_estadisticas(request):
 			
 	except Exception as e:
 		print(e)
-		return JsonResponse("Chale algo fallo xd :'v",status=201,safe=False)
+		return JsonResponse("Chale algo fallo xd :'v",status=400,safe=False)
 		
 
