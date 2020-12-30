@@ -343,6 +343,6 @@ def test_estadisticas(request):
 			print(resultadosCampania)
 	except Exception as e:
 		print(e)
-		return JsonResponse("Chale algo fallo :'v",status=201,safe=False)
+		return JsonResponse("Chale algo fallo xd :'v",status=201,safe=False)
 		
 
