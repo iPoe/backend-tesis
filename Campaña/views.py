@@ -332,18 +332,43 @@ def estadisticas_campaña(request):
 				
 		return JsonResponse(dataest,status=201,safe=False)
 
+def estaux(idcamp):
+	campania = Campania.objects.get(pk = idcamp)
+	serializer = CampañaSerializer(campania)
+	dataest = serializer.data
+	users = contactosxcampa.objects.filter(campania=campania)
+	dataest['nombreContactos'] = users[0].nombreContactos
+	mxc = mediosxcampania.objects.filter(campania_id=campania)
+	dataest.pop('operador_ID')
+	dataest.pop('Fecha_Creada')
+	lista_medios = list()
+	for m in mxc:
+		dicMedio = {
+			"tipoMedio":m.medio_id.tipo_medio.descripcion,
+		"sms": m.medio_id.sms_mensaje,
+		"intensidad": m.intensidad,
+		"Horas": auxHMedio(m.id)
+		}
+		lista_medios.append(dicMedio)
+
+	dataest['medios'] = lista_medios
+	return dataest
+
+
+
 
 @api_view(['POST'])
 def test_estadisticas(request):
 	try:
 		with transaction.atomic():
+
 			idcampania = request.data['id']
-			campania = Campania.objects.get(pk = idcampania)
+			campania,dataest = Campania.objects.get(pk = idcampania),estaux(idcampania)
 			resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc',
 			'medio_id','Tipo_resultado').order_by('contacto_cc','medio_id')
 			print(resultadosCampania)
 			contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
-			i,flag,size = 1,0,len(resultadosCampania)
+			i = 1
 			dicresxmed = {}
 			for res in resultadosCampania:
 				contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
@@ -357,15 +382,14 @@ def test_estadisticas(request):
 				dicresxmed[strMedio] = "si" if res['Tipo_resultado'] == 1 else "no"
 				contacantiguo = res['contacto_cc']
 				i+=1
-				flag+=1
+
 			contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
 			diccont = contSer.data
 			dicfinal = {**diccont,**dicresxmed}
 			listausers.append(dicfinal)
-				
+			dataest['estadistica'] = listausers
 
-
-			return JsonResponse(listausers,status=201,safe=False)
+			return JsonResponse(dataest,status=201,safe=False)
 			
 	except Exception as e:
 		print(e)
