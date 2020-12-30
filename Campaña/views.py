@@ -333,7 +333,7 @@ def estadisticas_campaña(request):
 		return JsonResponse(dataest,status=201,safe=False)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 def test_estadisticas(request):
 	try:
 		with transaction.atomic():
@@ -341,6 +341,8 @@ def test_estadisticas(request):
 			campania = Campania.objects.get(pk = idcampania)
 			resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).annotate(dcount=Count('contacto_cc'))
 			print(resultadosCampania)
+			return JsonResponse("Funciono",status=201,safe=False)
+			
 	except Exception as e:
 		print(e)
 		return JsonResponse("Chale algo fallo xd :'v",status=201,safe=False)
