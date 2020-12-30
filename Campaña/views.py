@@ -301,7 +301,7 @@ def estadisticas_campaña(request):
 						diccont = contSer.data
 						fechanueva = campania.fechaInicio
 						dicresmed = {}
-						while fechanueva <= fechaAct:				
+						while fechanueva <= fechaAct and fechanueva <= campania.fechaFin:				
 							for m in mxc:
 								resMed = []
 								res = resultadosxcampania.objects.filter(contacto_cc = u.contacto,
@@ -332,4 +332,17 @@ def estadisticas_campaña(request):
 				
 		return JsonResponse(dataest,status=201,safe=False)
 
+
+@api_view(['GET'])
+def test_estadisticas(request):
+	try:
+		with transaction.atomic():
+			idcampania = request.data['id']
+			campania = Campania.objects.get(pk = idcampania)
+			resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).annotate(dcount=Count('contacto_cc'))
+			print(resultadosCampania)
+	except Exception as e:
+		print(e)
+		return JsonResponse("Chale algo fallo :'v",status=201,safe=False)
+		
 
