@@ -351,7 +351,7 @@ def test_estadisticas(request):
 					contSer = ContactosSerializer(contactoActual)
 					diccont = contSer.data
 					dicfinal = {**diccont,**dicresxmed}
-					listausers.append(diccont)
+					listausers.append(dicfinal)
 					dicresxmed,i = {},0
 				strMedio = "medio_{}".format(i)
 				dicresxmed[strMedio] = "si" if res['Tipo_resultado'] == 1 else "no"
