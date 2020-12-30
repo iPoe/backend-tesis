@@ -348,11 +348,12 @@ def test_estadisticas(request):
 			for res in resultadosCampania:
 				contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])
 				if res['contacto_cc']!= contacantiguo:
-					listausers.append(dicresxmed)
 					dicresxmed,i = {},0
 				strMedio = "medio_{}".format(i)
 				dicresxmed[strMedio] = "si" if res['Tipo_resultado'] == 1 else "no"
 				contacantiguo = res['contacto_cc']
+				listausers.append(dicresxmed)
+
 			
 				
 				
