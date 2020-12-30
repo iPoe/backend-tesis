@@ -367,10 +367,10 @@ def test_estadisticas(request):
 			resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc',
 			'medio_id','Tipo_resultado').order_by('contacto_cc','medio_id')
 			#print(resultadosCampania)
-			contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
 			i = 1
 			dicresxmed = {}
 			if len(resultadosCampania) > 0:
+			contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
 				for res in resultadosCampania:
 					contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
 					if res['contacto_cc']!= contacantiguo:
