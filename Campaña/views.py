@@ -340,9 +340,25 @@ def test_estadisticas(request):
 			idcampania = request.data['id']
 			campania = Campania.objects.get(pk = idcampania)
 			resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc',
-			'medio_id','Tipo_resultado').order_by('contacto_cc')
+			'medio_id','Tipo_resultado').order_by('contacto_cc','medio_id')
 			print(resultadosCampania)
-			return JsonResponse("Funciono",status=201,safe=False)
+			contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
+			i = 1
+			dicresxmed = {}
+			for res in resultadosCampania:
+				contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])
+				if res['contacto_cc']!= contacantiguo:
+					listausers.append(dicresxmed)
+					dicresxmed,i = {},0
+			strMedio = "medio_{}".format(i)
+			dicresxmed[strMedio] = "si" if res['Tipo_resultado'] == 1 else "no"
+			contacantiguo = res['contacto_cc']
+			
+				
+				
+
+
+			return JsonResponse(listausers,status=201,safe=False)
 			
 	except Exception as e:
 		print(e)
