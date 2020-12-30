@@ -339,7 +339,8 @@ def test_estadisticas(request):
 		with transaction.atomic():
 			idcampania = request.data['id']
 			campania = Campania.objects.get(pk = idcampania)
-			resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc')
+			resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc',
+			'medio_id','Tipo_resultado').order_by('contacto_cc')
 			print(resultadosCampania)
 			return JsonResponse("Funciono",status=201,safe=False)
 			
