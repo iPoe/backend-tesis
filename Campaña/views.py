@@ -372,7 +372,7 @@ def test_estadisticas(request):
 			if len(resultadosCampania) > 0:
 				contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
 				for res in resultadosCampania:
-					contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
+					#contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
 					if res['contacto_cc']!= contacantiguo:
 						contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
 						diccont = contSer.data
@@ -397,5 +397,8 @@ def test_estadisticas(request):
 	except Exception as e:
 		print(e)
 		return JsonResponse("Chale algo fallo xd :'v",status=400,safe=False)
-		
 
+@api_view(['GET'])
+def icantSleep(request):
+	if request.method == 'GET':
+		return JsonResponse("Awake!",status=201,safe=False)
