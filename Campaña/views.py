@@ -350,9 +350,9 @@ def test_estadisticas(request):
 				if res['contacto_cc']!= contacantiguo:
 					listausers.append(dicresxmed)
 					dicresxmed,i = {},0
-			strMedio = "medio_{}".format(i)
-			dicresxmed[strMedio] = "si" if res['Tipo_resultado'] == 1 else "no"
-			contacantiguo = res['contacto_cc']
+				strMedio = "medio_{}".format(i)
+				dicresxmed[strMedio] = "si" if res['Tipo_resultado'] == 1 else "no"
+				contacantiguo = res['contacto_cc']
 			
 				
 				
