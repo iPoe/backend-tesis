@@ -14,12 +14,7 @@ urlpatterns = [
     path('count/',views.recuento_camp),
     path('est/',views.estadisticas_campaña),
     path('pr/',views.test_estadisticas),
-    
 
-
-
-
-    #path('cont/',views.Agregrar_contactos,),
 
 
 ]
