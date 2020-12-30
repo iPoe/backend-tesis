@@ -370,24 +370,27 @@ def test_estadisticas(request):
 			contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
 			i = 1
 			dicresxmed = {}
-			for res in resultadosCampania:
-				contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
-				if res['contacto_cc']!= contacantiguo:
-					contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
-					diccont = contSer.data
-					dicfinal = {**diccont,**dicresxmed}
-					listausers.append(dicfinal)
-					dicresxmed,i = {},1
-				strMedio = "medio_{}".format(i)
-				dicresxmed[strMedio] = "si" if res['Tipo_resultado'] == 1 else "no"
-				contacantiguo = res['contacto_cc']
-				i+=1
+			if len(res) > 0:
+				for res in resultadosCampania:
+					contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
+					if res['contacto_cc']!= contacantiguo:
+						contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+						diccont = contSer.data
+						dicfinal = {**diccont,**dicresxmed}
+						listausers.append(dicfinal)
+						dicresxmed,i = {},1
+					strMedio = "medio_{}".format(i)
+					dicresxmed[strMedio] = "si" if res['Tipo_resultado'] == 1 else "no"
+					contacantiguo = res['contacto_cc']
+					i+=1
 
-			contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
-			diccont = contSer.data
-			dicfinal = {**diccont,**dicresxmed}
-			listausers.append(dicfinal)
-			dataest['estadistica'] = listausers
+				contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+				diccont = contSer.data
+				dicfinal = {**diccont,**dicresxmed}
+				listausers.append(dicfinal)
+				dataest['estadistica'] = listausers
+			else:
+				dataest['estadistica'] = []
 
 			return JsonResponse(dataest,status=201,safe=False)
 			

@@ -12,8 +12,8 @@ urlpatterns = [
     path('ucamp/',views.updateCamp),
     path('fcamp/',views.endCamp),
     path('count/',views.recuento_camp),
-    path('est/',views.estadisticas_campaña),
-    path('pr/',views.test_estadisticas),
+    path('est/',views.test_estadisticas),
+    #path('pr/',views.test_estadisticas),
 
 
 
