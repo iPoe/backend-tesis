@@ -143,22 +143,25 @@ def customSchedule(h,m):
     )
     return schedule
 
-@shared_task(name="check_camp")
-def check_camp():
-    print("--Chequeando campañas--")
+@shared_task(name="check_camp_ini")
+def check_camp_ini():
+    print("--Chequeando campañas que inician--")
     campanias = Campania.objects.all()
     fechaActual = date.today()
     for c in campanias:
-        print(c.tasksIds)
-
         if camp_activa(c.id) and len(c.tasksIds) == 0:
             crearTaskxmedioxcamp(c.id)
-        else:
-            pass
+    print("--Chequeando campañas que inician--")
+
+@shared_task(name="check_camp_fini")
+def check_camp_fini():
+    print("--Chequeando campañas que terminan--")
+    campanias = Campania.objects.all()
+    fechaActual = date.today()
     for c in campanias:
-        if c.fechaFin == fechaActual:
+        if c.fechaFin == fechaActual and c.estado.descripcion!=3:
             disableTaskxCamp(c.id)
-    print("--Chequeando campañas--")
+    print("--Chequeando campañas que terminan--")
 
 @shared_task(name="enviar_sms")
 def enviar_sms(campId,mId):
