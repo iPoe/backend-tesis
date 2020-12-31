@@ -146,7 +146,7 @@ def customSchedule(h,m):
 @shared_task(name="check_camp_ini")
 def check_camp_ini():
     print("--Chequeando campañas que inician--")
-    campanias = Campania.objects.all()
+    campanias = Campania.objects.filter(estado = estado_campania.objects.get(descripcion=2))
     fechaActual = date.today()
     for c in campanias:
         if camp_activa(c.id) and len(c.tasksIds) == 0:
@@ -156,10 +156,10 @@ def check_camp_ini():
 @shared_task(name="check_camp_fini")
 def check_camp_fini():
     print("--Chequeando campañas que terminan--")
-    campanias = Campania.objects.all()
+    campanias = Campania.objects.filter(estado = estado_campania.objects.get(descripcion=1))
     fechaActual = date.today()
     for c in campanias:
-        if c.fechaFin == fechaActual and c.estado.descripcion!=3:
+        if c.fechaFin == fechaActual:
             disableTaskxCamp(c.id)
     print("--Chequeando campañas que terminan--")
 
