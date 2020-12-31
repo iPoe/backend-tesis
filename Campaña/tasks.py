@@ -127,7 +127,9 @@ def disableTaskxCamp(campID):
         periodic_task = PeriodicTask.objects.get(pk = idt)
         periodic_task.enabled = False
         periodic_task.save()
-        
+    inactiva = estado_campania.objects.get(descripcion=3)
+    camp.estado = inactiva
+    camp.save()      
 
 
 def customSchedule(h,m):
@@ -161,9 +163,9 @@ def check_camp():
 @shared_task(name="enviar_sms")
 def enviar_sms(campId,mId):
     envMensajeUsuarias(campId,mId)
-    print("Monkas")
+    print("Enviando sms")
 
 @shared_task(name="llamadas")
 def llamar(campId,mId,tel=''):
     llamar_usuarias(campId,mId,tel)
-    print("Monkas")
+    print("Llamando")
