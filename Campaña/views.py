@@ -187,6 +187,7 @@ def save_result(request):
 		try:
 			with transaction.atomic():
 				data,textRes = request.data,"no"
+				print(data)
 				idres = int(data['idLlamada'])
 				if data['res'] == 'completed' or data['res'] == 'delivered':
 					textRes = "si"
