@@ -6,7 +6,7 @@ from celery import shared_task
 from datetime import date
 from .models import Campania,estado_campania,mediosxcampania,Medio,contactosxcampa,resultadosxcampania,Contacto
 from django_celery_beat.models import IntervalSchedule, PeriodicTask,CrontabSchedule
-from .twilioAPI import VoiceCall,SMS
+from .twilioAPI import VoiceCall,SMS,Email
 
 clientSMS = SMS()
 clientVoice = VoiceCall()
@@ -90,16 +90,18 @@ def envMensajeUsuarias(ID,mId):
 
 def enviar_correos(ID,mId):
     usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)    
     fechaActual = date.today()
     camp = Campania.objects.get(pk = ID)
-    mensajeVoz = m.sms_mensaje
     cantidadUsuarias = len(usuariasCamp)
+    clientEmail = Email()
+    clientEmail.send_email(m.sms_mensaje,correosUsuarios)
     for n in range(cantidadUsuarias):
         res = resultadosxcampania(contacto_cc=usuariasCamp[n].contacto,
         campania_id=camp,medio_id=m,fecha=fechaActual)
         res.save()
-        
+
 
 def camp_activa(campId):
     fechaActual = date.today()

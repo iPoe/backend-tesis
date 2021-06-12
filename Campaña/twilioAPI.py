@@ -17,8 +17,8 @@ def load_twilio_config():
 
 def load_email_config():
     email_smtp_dir = 'smtp.gmail.com:587'
-    email_email = 'ventall.borrico@gmail.com'
-    email_password = 'Borrico12345'
+    email_email = settings.EMAIL_USER
+    email_password = settings.EMAIL_PASSWORD
     return email_email, email_password, email_smtp_dir
 
 

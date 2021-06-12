@@ -183,3 +183,8 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 TID  = os.environ["TWILIO_ACCOUNT_SID"]
 T_AUTH_TOKEN = os.environ["twilio_auth_token"]
 TNUMBER = os.environ["twilio_number"]
+
+EMAIL_USER = os.environ["email_user"]
+EMAIL_PASSWORD = os.environ["email_password"]
+
+
