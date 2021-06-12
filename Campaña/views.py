@@ -124,19 +124,8 @@ def endCamp(request):
 
 @api_view(['POST','PATCH','GET'])
 def campania_view(request):	
-	
 
-	if request.method == 'PATCH':
-		cam = Campania.objects.get(pk=data['id'])
-		if cam.estado == 1:
-			cam.fechaFin = data['fechaFin']
-			cam.duracion = cam.fechaFin.day - cam.fechaInicio.day
-		else:
-			cam.fechaInicio,cam.fechaFin= data['fechaInicio'],data['fechaFin']
-			cam.duracion = cam.fechaFin.day - cam.fechaInicio.day
-			estado_campaña(camp.id)
-
-	elif request.method=='GET':
+	if request.method=='GET':
 		try:
 			with transaction.atomic():
 				campanias = Campania.objects.all()
