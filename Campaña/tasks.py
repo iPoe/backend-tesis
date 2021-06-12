@@ -88,6 +88,19 @@ def envMensajeUsuarias(ID,mId):
         res.save()
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
+def enviar_correos(ID,mId):
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    m = Medio.objects.get(pk=mId)    
+    fechaActual = date.today()
+    camp = Campania.objects.get(pk = ID)
+    mensajeVoz = m.sms_mensaje
+    cantidadUsuarias = len(usuariasCamp)
+    for n in range(cantidadUsuarias):
+        res = resultadosxcampania(contacto_cc=usuariasCamp[n].contacto,
+        campania_id=camp,medio_id=m,fecha=fechaActual)
+        res.save()
+        
+
 def camp_activa(campId):
     fechaActual = date.today()
     camp = Campania.objects.get(pk = campId)
