@@ -39,7 +39,7 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
             start_time=datetime.datetime.now()
         )
         idTask.append(llamadaTel.id)
-    else:
+    elif m.tipo_medio.descripcion == 1:
         schedule = customSchedule(hora,minute)
         llamadaCel= PeriodicTask.objects.create(
             crontab=schedule,            
@@ -49,8 +49,19 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
             start_time=datetime.datetime.now()
         )
         idTask.append(llamadaCel.id)
+    elif m.tipo_medio.descripcion == 3:
+        schedule = customSchedule(hora,minute)
+        envioCorreos= PeriodicTask.objects.create(
+            crontab=schedule,            
+            name=name,
+            task='correos',
+            args=json.dumps([campId,mId]),
+            start_time=datetime.datetime.now()
+        )
+        idTask.append(envioCorreos.id)
+    else:
+        pass
 
-    #idTask.append(sms_camp.id)
     cam.tasksIds += idTask
     cam.save()
     
