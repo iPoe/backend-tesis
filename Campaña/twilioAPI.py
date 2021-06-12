@@ -1,7 +1,7 @@
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Say, Play
 from django.conf import settings
-#from email.MIMEText import MIMEText 
+from email.MIMEText import MIMEText 
 import smtplib
 
 
@@ -103,14 +103,14 @@ class Email:
         print('Email initialized')
 
     def send_email(self, body, to, subject):
-        """ message_email = MIMEText(body)
+        message_email = MIMEText(body)
         message_email['From'] = self.email_email
         message_email['To'] = to
-        message_email['Subject'] = subject """
+        message_email['Subject'] = subject
         self.server.sendmail(
             self.email_email,
             to, 
-            body
+            message_email.as_string
         )
         self.server.close()
 

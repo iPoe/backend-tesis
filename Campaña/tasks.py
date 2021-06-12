@@ -202,4 +202,4 @@ def llamar(campId,mId,tel=''):
 @shared_task(name="correos")
 def correos(campId,mId,tel=''):
     enviar_correos(campId,mId)
-    print("Llamando")    
+    print("Correos Enviados")    
