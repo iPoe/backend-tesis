@@ -8,7 +8,7 @@ Este repositorio contiene la API usada en la aplicacion de salud-publica
 - Definir si usar django-test o pruebas automaticas con selenium
 
 #### Despliegue en Heroku
-Para enviar la rama master a Heroku usa:
-`$ git push heroku master`
+Para enviar la rama master a Heroku usa:\
+`$ git push heroku master`\
 Para enviar la otra rama a Heroku usa:
 `$ git push heroku nombrerama:master`
