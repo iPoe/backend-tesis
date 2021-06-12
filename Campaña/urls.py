@@ -12,6 +12,5 @@ urlpatterns = [
     path('ucamp/',views.updateCamp),
     path('fcamp/',views.endCamp),
     path('count/',views.recuento_camp),
-    path('est/',views.test_estadisticas),
-    path('ps/',views.icantSleep), #Mantener la aplicacion encendida
+    path('est/',views.test_estadisticas)
 ]
