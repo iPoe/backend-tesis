@@ -107,7 +107,7 @@ def enviar_correos(ID,mId):
     # camp = Campania.objects.get(pk = ID)
     # cantidadUsuarias = len(usuariasCamp)
     clientEmail = Email()
-    clientEmail.send_email(m.sms_mensaje,correosUsuarios)
+    clientEmail.send_email(m.sms_mensaje,correosUsuarios,"Test subject")
     # for n in range(cantidadUsuarias):
     #     res = resultadosxcampania(contacto_cc=usuariasCamp[n].contacto,
     #     campania_id=camp,medio_id=m,fecha=fechaActual)
