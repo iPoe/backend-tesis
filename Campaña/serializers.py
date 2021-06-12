@@ -50,7 +50,7 @@ class ContactosSerializer(serializers.ModelSerializer):
 class MediaSerializer(serializers.ModelSerializer):
 	llamada_aud = serializers.FileField(allow_empty_file=True,required=False)
 	#email_asunt = serializers.CharField(allow_blank=True,required=False)
-	#email_cuerpo = serializers.CharField(allow_blank=True,required=False)
+	email_cuerpo = serializers.CharField(allow_blank=True,required=False,source='email_cuerpo')
 	sms = serializers.CharField(allow_blank=True,source='sms_mensaje')
 	tipoMedio = serializers.IntegerField(source='tipo_medio')
 	intensidad = serializers.IntegerField()
@@ -59,7 +59,7 @@ class MediaSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Medio
-		fields = ['sms','tipoMedio','llamada_aud','intensidad','Horas','campID']
+		fields = ['sms','tipoMedio','llamada_aud','intensidad','Horas','campID','email_cuerpo']
 	def create(self,validated_data):
 		i = validated_data['tipo_medio']
 		idcam = validated_data['campID']
