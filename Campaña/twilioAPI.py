@@ -110,7 +110,7 @@ class Email:
         self.server.sendmail(
             self.email_email,
             to, 
-            message_email.as_string
+            message_email.as_string()
         )
         self.server.close()
 
