@@ -1,7 +1,7 @@
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Say, Play
 from django.conf import settings
-from email.MIMEText import MIMEText 
+from email.mime.text import MIMEText 
 import smtplib
 
 
