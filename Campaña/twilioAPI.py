@@ -105,12 +105,13 @@ class Email:
     def send_email(self, body, to, subject):
         message_email = MIMEText(body)
         message_email['From'] = self.email_email
-        message_email['To'] = to
+        message_email['To'] = ", ".join(to)
         message_email['Subject'] = subject
+        text = message_email.as_string()
+      
         self.server.sendmail(
             self.email_email,
-            to, 
-            message_email.as_string()
+            to, text
         )
         self.server.close()
 
