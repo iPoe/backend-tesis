@@ -50,7 +50,7 @@ class ContactosSerializer(serializers.ModelSerializer):
 class MediaSerializer(serializers.ModelSerializer):
 	llamada_aud = serializers.FileField(allow_empty_file=True,required=False)
 	email_asunt = serializers.CharField(allow_blank=True,required=False)
-	email_cuerpo = serializers.CharField(allow_blank=True,required=False,source='email_cuerpo')
+	email_cuerpo = serializers.CharField(allow_blank=True,required=False)
 	sms = serializers.CharField(allow_blank=True,source='sms_mensaje')
 	tipoMedio = serializers.IntegerField(source='tipo_medio')
 	intensidad = serializers.IntegerField()
