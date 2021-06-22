@@ -148,6 +148,7 @@ def campania_view(request):
 		try:
 			with transaction.atomic():
 				mediosdata = request.data['medios']
+				print(mediosdata)
 				CampaniaConf = Camp_setup(request.data)
 				if CampaniaConf.serializerCampania.is_valid():
 					a = CampaniaConf.guardarContactos()
