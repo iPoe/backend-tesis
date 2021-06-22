@@ -52,4 +52,5 @@ class Camp_setup:
             self.mediosSerial.save()
             return "Medios Creados!"
         else:
+            print(self.mediosSerial.errors)
             return self.mediosSerial.errors
