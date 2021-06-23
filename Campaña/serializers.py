@@ -1,3 +1,4 @@
+from typing_extensions import Required
 from rest_framework import serializers
 from datetime import date
 import datetime
@@ -51,7 +52,7 @@ class MediaSerializer(serializers.ModelSerializer):
 	llamada_aud = serializers.FileField(allow_empty_file=True,required=False)
 	email_asunt = serializers.CharField(allow_blank=True,required=False)
 	email_cuerpo = serializers.CharField(allow_blank=True,required=False)
-	sms = serializers.CharField(allow_blank=True,source='sms_mensaje')
+	sms = serializers.CharField(allow_blank=True,Required=False,source='sms_mensaje')
 	tipoMedio = serializers.IntegerField(source='tipo_medio')
 	intensidad = serializers.IntegerField()
 	Horas = serializers.ListField(child = serializers.TimeField())
