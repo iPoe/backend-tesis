@@ -5,6 +5,11 @@ import datetime
 from .models import Campania,Contacto,Medio,estado_campania,mediosxcampania,Tipo_medio
 from django.contrib.auth.validators import UnicodeUsernameValidator
 
+def removerTags(s):
+	sP = s.replace('<p>','')
+	res = sP.replace('</p>','')
+	return res
+
 
 class CampañaSerializer(serializers.ModelSerializer):
 	Fecha_Creada = serializers.DateField(format="%d-%m-%Y",input_formats=['%d-%m-%Y',])
@@ -64,15 +69,17 @@ class MediaSerializer(serializers.ModelSerializer):
 	def create(self,validated_data):
 		i = validated_data['tipo_medio']
 		idcam = validated_data['campID']
+		if i == 3:
+			asunto = validated_data['email_asunt']
+			cuerpo = validated_data['email_cuerpo']
+			validated_data['email_asunt'] = removerTags(asunto)
+			validated_data['email_cuerpo'] = removerTags(cuerpo)
 
 		validated_data['tipo_medio'] = Tipo_medio.objects.get(descripcion=i)
 		intensidadMed = (validated_data['intensidad'],validated_data['Horas'])
-
 		validated_data.pop('intensidad')
 		validated_data.pop('Horas')
 		validated_data.pop('campID')
-
-
 		medios = Medio.objects.create(**validated_data)
 		campania = Campania.objects.get(pk = idcam)
 		v = len(intensidadMed)
