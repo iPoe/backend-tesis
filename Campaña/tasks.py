@@ -104,7 +104,7 @@ def enviar_correos(ID,mId):
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)    
     clientEmail = Email()
-    clientEmail.send_email(m.email_cuerpo,correosUsuarios,m.email_cuerpo)
+    clientEmail.send_email(m.email_cuerpo,correosUsuarios,m.email_asunto)
     
 
 
