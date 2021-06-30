@@ -41,7 +41,6 @@ class Camp_setup:
 
     
     def guardarMedios(self,ID,data):
-        #intensidadMed = [(x['intensidad'],x['Horas']) for x in self.data_medios]
         dmedios = data
         idcam = Campania.objects.get(pk=ID).id
         for m in dmedios:
@@ -52,4 +51,5 @@ class Camp_setup:
             self.mediosSerial.save()
             return "Medios Creados!"
         else:
+            print(self.mediosSerial.errors)
             return self.mediosSerial.errors

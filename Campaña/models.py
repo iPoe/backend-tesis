@@ -53,7 +53,7 @@ class Tipo_medio(models.Model):
 
 class Medio(models.Model):
 	email_asunt = models.CharField(max_length=30,null=True,blank=True)
-	email_cuerpo = models.CharField(max_length=30,null=True,blank=True)
+	email_cuerpo = models.CharField(max_length=500,null=True,blank=True)
 	sms_mensaje = models.CharField(max_length=500,null=True,blank=True)
 	llamada_aud = models.FileField(upload_to='audios/',null=True,blank=True)
 	tipo_medio = models.ForeignKey(Tipo_medio,on_delete=models.PROTECT)

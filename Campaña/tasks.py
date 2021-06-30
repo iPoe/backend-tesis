@@ -6,7 +6,7 @@ from celery import shared_task
 from datetime import date
 from .models import Campania,estado_campania,mediosxcampania,Medio,contactosxcampa,resultadosxcampania,Contacto
 from django_celery_beat.models import IntervalSchedule, PeriodicTask,CrontabSchedule
-from .twilioAPI import VoiceCall,SMS
+from .twilioAPI import VoiceCall,SMS,Email
 
 clientSMS = SMS()
 clientVoice = VoiceCall()
@@ -39,7 +39,7 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
             start_time=datetime.datetime.now()
         )
         idTask.append(llamadaTel.id)
-    else:
+    elif m.tipo_medio.descripcion == 1:
         schedule = customSchedule(hora,minute)
         llamadaCel= PeriodicTask.objects.create(
             crontab=schedule,            
@@ -49,8 +49,19 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
             start_time=datetime.datetime.now()
         )
         idTask.append(llamadaCel.id)
+    elif m.tipo_medio.descripcion == 3:
+        schedule = customSchedule(hora,minute)
+        envioCorreos= PeriodicTask.objects.create(
+            crontab=schedule,            
+            name=name,
+            task='correos',
+            args=json.dumps([campId,mId]),
+            start_time=datetime.datetime.now()
+        )
+        idTask.append(envioCorreos.id)
+    else:
+        pass
 
-    #idTask.append(sms_camp.id)
     cam.tasksIds += idTask
     cam.save()
     
@@ -68,7 +79,6 @@ def llamar_usuarias(ID,mId,tel=''):
         numerosUsuarias = ["+57"+obj.contacto.telefono for obj in cons]
 
     mensajeVoz = m.sms_mensaje
-    #mensajeVoz = '¡Hola! Te llamamos desde Salud Pública, queremos darte la bienvenida a las nueva era digital de las llamadas automáticas, es un placer para mi hablarte, deseo que pronto nos conozcamos, ¡Muchas gracias! Y te deseo una Feliz Navidad y Próspero año nuevo, ¡Hasta luego y lindo día!'
     camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
     for n in range(cant):
@@ -87,6 +97,19 @@ def envMensajeUsuarias(ID,mId):
         res = resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
         res.save()
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
+
+def enviar_correos(ID,mId):
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
+    m = Medio.objects.get(pk=mId)    
+    clientEmail = Email()
+    clientEmail.send_email(m.email_cuerpo,correosUsuarios,m.email_asunt)
+
+def enviarWhatsapp(ID,mid):
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    numerosUsuarias = ["+57"+u.contacto.celular for u in usuariasCamp]
+    print(numerosUsuarias)
+
 
 def camp_activa(campId):
     fechaActual = date.today()
@@ -172,3 +195,8 @@ def enviar_sms(campId,mId):
 def llamar(campId,mId,tel=''):
     llamar_usuarias(campId,mId,tel)
     print("Llamando")
+
+@shared_task(name="correos")
+def correos(campId,mId,tel=''):
+    enviar_correos(campId,mId)
+    print("Correos Enviados")    

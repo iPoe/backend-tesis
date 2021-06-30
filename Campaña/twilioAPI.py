@@ -1,7 +1,7 @@
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Say, Play
 from django.conf import settings
-#from email.MIMEText import MIMEText 
+from email.mime.text import MIMEText 
 import smtplib
 
 
@@ -17,8 +17,8 @@ def load_twilio_config():
 
 def load_email_config():
     email_smtp_dir = 'smtp.gmail.com:587'
-    email_email = 'ventall.borrico@gmail.com'
-    email_password = 'Borrico12345'
+    email_email = settings.EMAIL_USER
+    email_password = settings.EMAIL_PASSWORD
     return email_email, email_password, email_smtp_dir
 
 
@@ -103,14 +103,15 @@ class Email:
         print('Email initialized')
 
     def send_email(self, body, to, subject):
-        """ message_email = MIMEText(body)
+        message_email = MIMEText(body)
         message_email['From'] = self.email_email
-        message_email['To'] = to
-        message_email['Subject'] = subject """
+        message_email['To'] = ", ".join(to)
+        message_email['Subject'] = subject
+        text = message_email.as_string()
+      
         self.server.sendmail(
             self.email_email,
-            to, 
-            body
+            to, text
         )
         self.server.close()
 

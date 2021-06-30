@@ -1,8 +1,14 @@
+# from typing_extensions import required
 from rest_framework import serializers
 from datetime import date
 import datetime
 from .models import Campania,Contacto,Medio,estado_campania,mediosxcampania,Tipo_medio
 from django.contrib.auth.validators import UnicodeUsernameValidator
+
+def removerTags(s):
+	sP = s.replace('<p>','')
+	res = sP.replace('</p>','')
+	return res
 
 
 class CampañaSerializer(serializers.ModelSerializer):
@@ -49,9 +55,9 @@ class ContactosSerializer(serializers.ModelSerializer):
 
 class MediaSerializer(serializers.ModelSerializer):
 	llamada_aud = serializers.FileField(allow_empty_file=True,required=False)
-	#email_asunt = serializers.CharField(allow_blank=True,required=False)
-	#email_cuerpo = serializers.CharField(allow_blank=True,required=False)
-	sms = serializers.CharField(allow_blank=True,source='sms_mensaje')
+	email_asunt = serializers.CharField(allow_blank=True,required=False)
+	email_cuerpo = serializers.CharField(allow_blank=True,required=False)
+	sms = serializers.CharField(allow_blank=True,required=False,source='sms_mensaje')
 	tipoMedio = serializers.IntegerField(source='tipo_medio')
 	intensidad = serializers.IntegerField()
 	Horas = serializers.ListField(child = serializers.TimeField())
@@ -59,19 +65,21 @@ class MediaSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Medio
-		fields = ['sms','tipoMedio','llamada_aud','intensidad','Horas','campID']
+		fields = ['sms','tipoMedio','llamada_aud','intensidad','Horas','campID','email_asunt','email_cuerpo']
 	def create(self,validated_data):
 		i = validated_data['tipo_medio']
 		idcam = validated_data['campID']
+		if i == 3:
+			asunto = validated_data['email_asunt']
+			cuerpo = validated_data['email_cuerpo']
+			validated_data['email_asunt'] = removerTags(asunto)
+			validated_data['email_cuerpo'] = removerTags(cuerpo)
 
 		validated_data['tipo_medio'] = Tipo_medio.objects.get(descripcion=i)
 		intensidadMed = (validated_data['intensidad'],validated_data['Horas'])
-
 		validated_data.pop('intensidad')
 		validated_data.pop('Horas')
 		validated_data.pop('campID')
-
-
 		medios = Medio.objects.create(**validated_data)
 		campania = Campania.objects.get(pk = idcam)
 		v = len(intensidadMed)
