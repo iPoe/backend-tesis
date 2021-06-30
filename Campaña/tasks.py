@@ -108,6 +108,7 @@ def enviar_correos(ID,mId):
 def enviarWhatsapp(ID,mid):
     usuariasCamp = contactosxcampa.objects.filter(campania = ID)
     numerosUsuarias = ["+57"+u.contacto.celular for u in usuariasCamp]
+    print(numerosUsuarias)
 
 
 def camp_activa(campId):
