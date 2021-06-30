@@ -106,11 +106,14 @@ def enviar_correos(ID,mId):
     clientEmail.send_email(m.email_cuerpo,correosUsuarios,m.email_asunt)
 
 def enviarWhatsapp(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
-    numerosUsuarias = ["+57"+u.contacto.celular for u in usuariasCamp]
-    m = Medio.objects.get(pk=mId)
-    for u in numerosUsuarias:
-        clientWhatsapp.send_message(m.sms_mensaje,u)
+    usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID),Campania.objects.get(pk = ID)
+    m,fechaActual = Medio.objects.get(pk=mId),date.today()
+    for u in usuariasCamp:
+        res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        res.save()
+        # clientWhatsapp.send_message(m.sms_mensaje,"57"+u.contacto.celular)
+
+
 
 
 def camp_activa(campId):
