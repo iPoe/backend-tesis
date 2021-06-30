@@ -270,45 +270,60 @@ def estaux(idcamp):
 
 
 
-@api_view(['POST'])
+@api_view(['POST','GET'])
 def test_estadisticas(request):
-	try:
-		with transaction.atomic():
+	if request.method == 'GET':
+		try:
+			with transaction.atomic():
 
-			idcampania = request.data['id']
-			campania,dataest = Campania.objects.get(pk = idcampania),estaux(idcampania)
-			resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc',
-			'medio_id','Tipo_resultado').order_by('contacto_cc','medio_id')
-			
-			i = 1
-			dicresxmed = {}
-			if len(resultadosCampania) > 0:
-				contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
-				for res in resultadosCampania:
-					#contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
-					if res['contacto_cc']!= contacantiguo:
-						contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
-						diccont = contSer.data
-						dicfinal = {**diccont,**dicresxmed}
-						listausers.append(dicfinal)
-						dicresxmed,i = {},1
-					strMedio = "medio_{}".format(i)
-					dicresxmed[strMedio] = "Si" if res['Tipo_resultado'] == 1 else "No"
-					contacantiguo = res['contacto_cc']
-					i+=1
+				idcampania = request.data['id']
+				campania,dataest = Campania.objects.get(pk = idcampania),estaux(idcampania)
+				resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc',
+				'medio_id','Tipo_resultado').order_by('contacto_cc','medio_id')
+				
+				i = 1
+				dicresxmed = {}
+				if len(resultadosCampania) > 0:
+					contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
+					for res in resultadosCampania:
+						#contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
+						if res['contacto_cc']!= contacantiguo:
+							contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+							diccont = contSer.data
+							dicfinal = {**diccont,**dicresxmed}
+							listausers.append(dicfinal)
+							dicresxmed,i = {},1
+						strMedio = "medio_{}".format(i)
+						dicresxmed[strMedio] = "Si" if res['Tipo_resultado'] == 1 else "No"
+						contacantiguo = res['contacto_cc']
+						i+=1
 
-				contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
-				diccont = contSer.data
-				dicfinal = {**diccont,**dicresxmed}
-				listausers.append(dicfinal)
-				dataest['estadistica'] = listausers
-			else:
-				dataest['estadistica'] = []
+					contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+					diccont = contSer.data
+					dicfinal = {**diccont,**dicresxmed}
+					listausers.append(dicfinal)
+					dataest['estadistica'] = listausers
+				else:
+					dataest['estadistica'] = []
 
-			return JsonResponse(dataest,status=201,safe=False)
-			
-	except Exception as e:
-		print(e)
-		return JsonResponse("Error al cargar las estadisticas",status=400,safe=False)
+				return JsonResponse(dataest,status=201,safe=False)
+				
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error al cargar las estadisticas",status=400,safe=False)
+	elif request.method == 'POST':
+		try:
+			with transaction.atomic():
+				data,textRes = request.data,"no"
+				print(data)
+				idres = int(data['idLlamada'])
+				if data['res'] == 'completed' or data['res'] == 'delivered':
+					textRes = "si"
+				tipoRes = Tipo_resultado.objects.get(descripcion = textRes)
+				res = resultadosxcampania.objects.update_or_create(pk = idres,defaults={'Tipo_resultado':tipoRes})
+				return JsonResponse("Update completed",status=201,safe=False)
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
 
 
