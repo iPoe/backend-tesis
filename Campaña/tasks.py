@@ -6,11 +6,11 @@ from celery import shared_task
 from datetime import date
 from .models import Campania,estado_campania,mediosxcampania,Medio,contactosxcampa,resultadosxcampania,Contacto
 from django_celery_beat.models import IntervalSchedule, PeriodicTask,CrontabSchedule
-from .twilioAPI import VoiceCall,SMS,Email
+from .twilioAPI import VoiceCall,SMS,Email,WhatsApp
 
 clientSMS = SMS()
 clientVoice = VoiceCall()
-
+clientWhatsapp = WhatsApp()
 
 def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     cam = Campania.objects.get(pk=campId)
@@ -105,10 +105,12 @@ def enviar_correos(ID,mId):
     clientEmail = Email()
     clientEmail.send_email(m.email_cuerpo,correosUsuarios,m.email_asunt)
 
-def enviarWhatsapp(ID,mid):
+def enviarWhatsapp(ID,mId):
     usuariasCamp = contactosxcampa.objects.filter(campania = ID)
     numerosUsuarias = ["+57"+u.contacto.celular for u in usuariasCamp]
-    print(numerosUsuarias)
+    m = Medio.objects.get(pk=mId)
+    for u in numerosUsuarias:
+        clientWhatsapp.send_message(m.sms_mensaje,u)
 
 
 def camp_activa(campId):
