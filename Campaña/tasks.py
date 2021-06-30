@@ -79,7 +79,6 @@ def llamar_usuarias(ID,mId,tel=''):
         numerosUsuarias = ["+57"+obj.contacto.telefono for obj in cons]
 
     mensajeVoz = m.sms_mensaje
-    #mensajeVoz = '¡Hola! Te llamamos desde Salud Pública, queremos darte la bienvenida a las nueva era digital de las llamadas automáticas, es un placer para mi hablarte, deseo que pronto nos conozcamos, ¡Muchas gracias! Y te deseo una Feliz Navidad y Próspero año nuevo, ¡Hasta luego y lindo día!'
     camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
     for n in range(cant):
@@ -105,7 +104,10 @@ def enviar_correos(ID,mId):
     m = Medio.objects.get(pk=mId)    
     clientEmail = Email()
     clientEmail.send_email(m.email_cuerpo,correosUsuarios,m.email_asunt)
-    
+
+def enviarWhatsapp(ID,mid):
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    numerosUsuarias = ["+57"+u.contacto.celular for u in usuariasCamp]
 
 
 def camp_activa(campId):
