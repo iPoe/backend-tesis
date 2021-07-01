@@ -111,7 +111,7 @@ def enviarWhatsapp(ID,mId):
     for u in usuariasCamp:
         res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
         res.save()
-        # clientWhatsapp.send_message(m.sms_mensaje,"57"+u.contacto.celular)
+        # clientWhatsapp.send_message(m.sms_mensaje,"57"+u.contacto.celular,str(res.id))
 
 
 
