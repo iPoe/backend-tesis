@@ -74,9 +74,6 @@ class WhatsApp:
             body=body,
             to='whatsapp:'+to,
             from_='whatsapp:'+self.twilio_number_whatsapp,
-            status_callback='https://coffee-cuscus-4020.twil.io/status-callback-wp'+idLlamada,
-            status_callback_method = 'POST',
-            timeout=30,
         )
         print(message_whatsapp.sid)
 
