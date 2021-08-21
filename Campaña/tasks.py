@@ -59,6 +59,16 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
             start_time=datetime.datetime.now()
         )
         idTask.append(envioCorreos.id)
+    elif m.tipo_medio.descripcion == 5:
+        schedule = customSchedule(hora,minute)
+        enviarWp= PeriodicTask.objects.create(
+            crontab=schedule,            
+            name=name,
+            task='enviar_wp',
+            args=json.dumps([campId,mId]),
+            start_time=datetime.datetime.now()
+        )
+        idTask.append(enviarWp.id)
     else:
         pass
 
@@ -196,13 +206,18 @@ def enviar_sms(campId,mId):
     envMensajeUsuarias(campId,mId)
     print("Enviando sms")
 
+@shared_task(name="enviar_sms")
+def enviar_sms(campId,mId):
+    envMensajeUsuarias(campId,mId)
+    print("Enviando sms")
+
 @shared_task(name="llamadas")
 def llamar(campId,mId,tel=''):
     llamar_usuarias(campId,mId,tel)
     print("Llamando")
 
-@shared_task(name="correos")
-def correos(campId,mId,tel=''):
-    enviar_correos(campId,mId)
+@shared_task(name="enviar_wp")
+def enviar_wp(campId,mId):
+    enviarWhatsapp(campId,mId)
     print("Correos Enviados")    
 
