@@ -309,6 +309,7 @@ def test_estadisticas(request):
 				return JsonResponse(dataest,status=201,safe=False)
 				
 		except Exception as e:
+			print("Un error ocurrio en las estadisticas")
 			print(e)
 			return JsonResponse("Error al cargar las estadisticas",status=400,safe=False)
 	elif request.method == 'POST':
