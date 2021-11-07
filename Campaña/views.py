@@ -270,9 +270,9 @@ def estaux(idcamp):
 
 
 
-@api_view(['POST','GET'])
+@api_view(['POST','PUT'])
 def test_estadisticas(request):
-	if request.method == 'POST':
+	if request.method == 'PUT':
 		try:
 			with transaction.atomic():
 
@@ -312,19 +312,19 @@ def test_estadisticas(request):
 			print("Un error ocurrio en las estadisticas")
 			print(e)
 			return JsonResponse("Error al cargar las estadisticas",status=400,safe=False)
-	# elif request.method == 'POST':
-	# 	try:
-	# 		with transaction.atomic():
-	# 			data,textRes = request.data,"no"
-	# 			print(data)
-	# 			idres = int(data['idLlamada'])
-	# 			if data['res'] == 'completed' or data['res'] == 'delivered':
-	# 				textRes = "si"
-	# 			tipoRes = Tipo_resultado.objects.get(descripcion = textRes)
-	# 			res = resultadosxcampania.objects.update_or_create(pk = idres,defaults={'Tipo_resultado':tipoRes})
-	# 			return JsonResponse("Update completed",status=201,safe=False)
-	# 	except Exception as e:
-	# 		print(e)
-	# 		return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
+	elif request.method == 'POST':
+		try:
+			with transaction.atomic():
+				data,textRes = request.data,"no"
+				print(data)
+				idres = int(data['idLlamada'])
+				if data['res'] == 'completed' or data['res'] == 'delivered':
+					textRes = "si"
+				tipoRes = Tipo_resultado.objects.get(descripcion = textRes)
+				res = resultadosxcampania.objects.update_or_create(pk = idres,defaults={'Tipo_resultado':tipoRes})
+				return JsonResponse("Update completed",status=201,safe=False)
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
 
 
