@@ -16,3 +16,9 @@ Para enviar la rama master a Heroku usa:\
 `$ git push heroku master`\
 Para enviar cualquier otra rama a Heroku usa:\
 `$ git push heroku nombrerama:master`
+
+#### Despliegue del front end
+Primero se debe compilar el front para el deployment en GCP usando:\
+`$ npm run build`\
+Luego de compilar los archivos para el deployment usa:\
+`$ gcloud app deploy`\
