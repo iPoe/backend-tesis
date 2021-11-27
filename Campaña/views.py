@@ -10,7 +10,7 @@ from django.db.models import Count
 from django.db import transaction
 
 #1cel,2tel,correo3,sms4,wp5
-from .models import Campania,Contacto,contactosxcampa,Operador,mediosxcampania,Tipo_resultado,resultadosxcampania,estado_campania
+from .models import Campania,Contacto, Medio,contactosxcampa,Operador,mediosxcampania,Tipo_resultado,resultadosxcampania,estado_campania
 from .serializers import CampañaSerializer,ContactosSerializer,contactosxcampSerializer,MediaSerializer
 from .tasks import crearTareaCampaña
 from Campaña.tasks import crearTaskxmedioxcamp,disableTaskxCamp
@@ -346,7 +346,7 @@ def reply_whatsapp(request):
 			if campaña:
 				medsxcamp = mediosxcampania.objects.filter(campania_id=campaña.id)
 				for m in medsxcamp:
-					medio = m.medio
+					medio = Medio.objects.get(pk = m.medio_id)
 					if medio.tipo_medio.descripcion == 5:
 						clientWhatsapp.send_message( medio.sms_mensaje ,
 						request.data['WaId'],'Reply de wp')
