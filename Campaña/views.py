@@ -337,16 +337,17 @@ def reply_whatsapp(request):
 	if request.method == 'POST':
 		print('ENTRO AL REPLY DE WP')
 		try:
-			num_media = int(request.values.get("NumMedia"))
-			print(request.values)
-		except (ValueError, TypeError):
-			return "Invalid request: invalid or missing NumMedia parameter", 400
-		# response = MessagingResponse()
-		if not num_media:
-			# msg = response.message("Send us an image!")
+			print(request.data)
 			clientWhatsapp.send_message('Welcome',"57"+'3177947129','Reply de wp')
-		else:
-			clientWhatsapp.send_message('Welcome',"57"+'3177947129','Reply de wp')
+
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error al responder al wp",status=400,safe=False)
+		# if not num_media:
+		# 	# msg = response.message("Send us an image!")
+		# 	clientWhatsapp.send_message('Welcome',"57"+'3177947129','Reply de wp')
+		# else:
+		# 	clientWhatsapp.send_message('Welcome',"57"+'3177947129','Reply de wp')
 			# msg = response.message("Thanks for the image. Here's one for you!")
 			# msg.media(GOOD_BOY_URL)
 		# return str(response)
