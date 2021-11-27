@@ -21,4 +21,4 @@ Para enviar cualquier otra rama a Heroku usa:\
 Primero se debe compilar el front para el deployment en GCP usando:\
 `$ npm run build`\
 Luego de compilar los archivos para el deployment usa:\
-`$ gcloud app deploy`\
+`$ gcloud app deploy`

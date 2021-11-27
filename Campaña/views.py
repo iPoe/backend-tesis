@@ -9,7 +9,6 @@ import datetime as dt
 from django.db.models import Count
 from django.db import transaction
 
-
 #1cel,2tel,correo3,sms4,wp5
 from .models import Campania,Contacto,contactosxcampa,Operador,mediosxcampania,Tipo_resultado,resultadosxcampania,estado_campania
 from .serializers import CampañaSerializer,ContactosSerializer,contactosxcampSerializer,MediaSerializer
@@ -17,6 +16,8 @@ from .tasks import crearTareaCampaña
 from Campaña.tasks import crearTaskxmedioxcamp,disableTaskxCamp
 
 from .setup import Camp_setup
+from twilio.twiml.messaging_response import MessagingResponse
+
 
 def change_estado_campania(ID):
 	Camp = Campania.objects.get(pk = ID)
@@ -327,4 +328,18 @@ def test_estadisticas(request):
 			print(e)
 			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
 
+@api_view(['POST'])
 
+def reply_whatsapp(request):
+	try:
+		num_media = int(request.values.get("NumMedia"))
+		print(request.values)
+	except (ValueError, TypeError):
+		return "Invalid request: invalid or missing NumMedia parameter", 400
+	response = MessagingResponse()
+	if not num_media:
+		msg = response.message("Send us an image!")
+	else:
+		msg = response.message("Thanks for the image. Here's one for you!")
+		# msg.media(GOOD_BOY_URL)
+	return str(response)
