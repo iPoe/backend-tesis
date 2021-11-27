@@ -11,6 +11,7 @@ from .twilioAPI import VoiceCall,SMS,Email,WhatsApp
 clientSMS = SMS()
 clientVoice = VoiceCall()
 clientWhatsapp = WhatsApp()
+whatsapp_Template = 'Hola te escribimos de parte de la Red de Salud Ladera, el dia de hoy tenemos información muy importante para ti, si deseas saber mas por favor responde a este mensaje.'
 
 def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     cam = Campania.objects.get(pk=campId)
@@ -121,7 +122,7 @@ def enviarWhatsapp(ID,mId):
     for u in usuariasCamp:
         res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
         res.save()
-        clientWhatsapp.send_message(m.sms_mensaje,"57"+u.contacto.celular,str(res.id))
+        clientWhatsapp.send_message(whatsapp_Template,"57"+u.contacto.celular,str(res.id))
 
 
 

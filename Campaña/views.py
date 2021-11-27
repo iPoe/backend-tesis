@@ -335,19 +335,11 @@ def test_estadisticas(request):
 @api_view(['POST'])
 def reply_whatsapp(request):
 	if request.method == 'POST':
-		print('ENTRO AL REPLY DE WP')
 		try:
 			print(request.data)
-			clientWhatsapp.send_message('Welcome',"57"+'3177947129','Reply de wp')
-
+			clientWhatsapp.send_message('Welcome'+request.data['ProfileName'],request.data['WaId'],'Reply de wp')
+			usuaria = Contacto.objects.get(celular=request.data['WaId'][2:])
+			print(usuaria)
 		except Exception as e:
 			print(e)
 			return JsonResponse("Error al responder al wp",status=400,safe=False)
-		# if not num_media:
-		# 	# msg = response.message("Send us an image!")
-		# 	clientWhatsapp.send_message('Welcome',"57"+'3177947129','Reply de wp')
-		# else:
-		# 	clientWhatsapp.send_message('Welcome',"57"+'3177947129','Reply de wp')
-			# msg = response.message("Thanks for the image. Here's one for you!")
-			# msg.media(GOOD_BOY_URL)
-		# return str(response)
