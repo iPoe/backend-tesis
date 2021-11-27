@@ -346,7 +346,7 @@ def reply_whatsapp(request):
 			if campaña:
 				medsxcamp = mediosxcampania.objects.filter(campania_id=campaña.id)
 				for m in medsxcamp:
-					medio = Medio.objects.get(pk = m.medio_id)
+					medio = Medio.objects.get(pk = m.medio_id.id)
 					if medio.tipo_medio.descripcion == 5:
 						clientWhatsapp.send_message( medio.sms_mensaje ,
 						request.data['WaId'],'Reply de wp')
