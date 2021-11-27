@@ -338,8 +338,9 @@ def reply_whatsapp(request):
 		try:
 			print(request.data)
 			clientWhatsapp.send_message('Welcome'+request.data['ProfileName'],request.data['WaId'],'Reply de wp')
-			usuaria = Contacto.objects.get(celular=request.data['WaId'][2:])
+			usuaria = Contacto.objects.filter(celular=request.data['WaId'][2:]).first()
 			print(usuaria)
+			#Filtrar solo las campañas activas
 		except Exception as e:
 			print(e)
 			return JsonResponse("Error al responder al wp",status=400,safe=False)
