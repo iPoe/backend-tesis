@@ -76,19 +76,13 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     cam.tasksIds += idTask
     cam.save()
     
-        
-
-
 def llamar_usuarias(ID,mId,tel=''):
     cons = contactosxcampa.objects.filter(campania = ID)
-
     m = Medio.objects.get(pk=mId)
-    
     fechaActual = date.today()
     numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
     if tel == 1:
         numerosUsuarias = ["+57"+obj.contacto.telefono for obj in cons]
-
     mensajeVoz = m.sms_mensaje
     camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)

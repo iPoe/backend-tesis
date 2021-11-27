@@ -337,10 +337,18 @@ def reply_whatsapp(request):
 	if request.method == 'POST':
 		try:
 			print(request.data)
-			clientWhatsapp.send_message('Welcome'+request.data['ProfileName'],request.data['WaId'],'Reply de wp')
 			usuaria = Contacto.objects.filter(celular=request.data['WaId'][2:]).first()
-			print(usuaria)
-			#Filtrar solo las campañas activas
+			usuariasCampaña = contactosxcampa.objects.filter(contacto=usuaria)
+			campaña = None
+			for resultado in usuariasCampaña:
+				if resultado.campania.estado == estado_campania.objects.get(descripcion=1):
+					campaña = resultado.campania
+			if campaña:
+				medsxcamp = mediosxcampania.objects.filter(campania_id=campaña.id)
+				for medio in medsxcamp:
+					if medio.tipo_medio.descripcion == 5:
+						clientWhatsapp.send_message( medio.sms_mensaje ,
+						request.data['WaId'],'Reply de wp')
 		except Exception as e:
 			print(e)
 			return JsonResponse("Error al responder al wp",status=400,safe=False)
