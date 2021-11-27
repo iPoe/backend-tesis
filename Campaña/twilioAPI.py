@@ -11,7 +11,7 @@ def load_twilio_config():
     twilio_account_sid = settings.TID
     twilio_auth_token = settings.T_AUTH_TOKEN
     twilio_number = settings.TNUMBER
-    twilio_number_whatsapp = '+14155238886'
+    twilio_number_whatsapp = settings.TNUMBER
     return twilio_number, twilio_account_sid, twilio_auth_token, twilio_number_whatsapp
 
 
