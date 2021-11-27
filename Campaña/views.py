@@ -18,6 +18,10 @@ from Campaña.tasks import crearTaskxmedioxcamp,disableTaskxCamp
 from .setup import Camp_setup
 from twilio.twiml.messaging_response import MessagingResponse
 
+from .twilioAPI import WhatsApp
+clientWhatsapp = WhatsApp()
+
+
 
 def change_estado_campania(ID):
 	Camp = Campania.objects.get(pk = ID)
@@ -329,7 +333,6 @@ def test_estadisticas(request):
 			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
 
 @api_view(['POST'])
-
 def reply_whatsapp(request):
 	if request.method == 'POST':
 		print('ENTRO AL REPLY DE WP')
@@ -338,10 +341,12 @@ def reply_whatsapp(request):
 			print(request.values)
 		except (ValueError, TypeError):
 			return "Invalid request: invalid or missing NumMedia parameter", 400
-		response = MessagingResponse()
+		# response = MessagingResponse()
 		if not num_media:
-			msg = response.message("Send us an image!")
+			# msg = response.message("Send us an image!")
+			clientWhatsapp.send_message('Welcome',"57"+'3177947129','Reply de wp')
 		else:
-			msg = response.message("Thanks for the image. Here's one for you!")
+			clientWhatsapp.send_message('Welcome',"57"+'3177947129','Reply de wp')
+			# msg = response.message("Thanks for the image. Here's one for you!")
 			# msg.media(GOOD_BOY_URL)
-		return str(response)
+		# return str(response)
