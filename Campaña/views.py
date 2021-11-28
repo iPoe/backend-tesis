@@ -1,4 +1,5 @@
 
+from typing import Tuple
 from django.http import HttpResponse,JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
@@ -336,7 +337,6 @@ def test_estadisticas(request):
 def reply_whatsapp(request):
 	if request.method == 'POST':
 		try:
-			print(request.data)
 			usuaria = Contacto.objects.filter(celular=request.data['WaId'][2:]).first()
 			usuariasCampaña = contactosxcampa.objects.filter(contacto=usuaria)
 			campaña = []
@@ -351,6 +351,9 @@ def reply_whatsapp(request):
 						if medio.tipo_medio.descripcion == 5:
 							clientWhatsapp.send_message( medio.sms_mensaje ,
 							request.data['WaId'],'Reply de wp')
+							tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
+							res = resultadosxcampania.objects.update_or_create( contacto_cc=usuaria.identidad,
+							 campania_id = c.id, medio_id= medio.id, defaults=	{'Tipo_resultado' : tipoRes} )
 		except Exception as e:
 			print(e)
 			return JsonResponse("Error al responder al wp",status=400,safe=False)
