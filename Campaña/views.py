@@ -363,5 +363,6 @@ def uploadAudio(request):
 	if request.method == 'POST':
 		try:
 			print(request.data)
+			return JsonResponse("Audio recibido",status=201,safe=False)
 		except Exception as e:
-			print(e)
+			print("Ha fallado lo siguiente: "+e)
