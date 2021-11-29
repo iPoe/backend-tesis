@@ -357,3 +357,11 @@ def reply_whatsapp(request):
 		except Exception as e:
 			print(e)
 			return JsonResponse("Error al responder al wp",status=400,safe=False)
+
+@api_view(['POST'])
+def uploadAudio(request):
+	if request.method == 'POST':
+		try:
+			print(request.data)
+		except Exception as e:
+			print(e)
