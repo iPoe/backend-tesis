@@ -83,7 +83,8 @@ def llamar_usuarias(ID,mId,tel=''):
     numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
     if tel == 1:
         numerosUsuarias = ["+57"+obj.contacto.telefono for obj in cons]
-    mensajeVoz, urlAUdio = m.sms_mensaje, 'https://firebasestorage.googleapis.com/v0/b/salud-publica-puj.appspot.com/o/audios%2Ffd359110-5245-11ec-89f6-fb7eeda2a29b.mp3?alt=media&token=64f31e0e-3066-40ea-8404-f99c1eebfde9'
+    matchUrlAudio = True if m.sms_mensaje[0:1] == 'ht' else False
+    mensajeVoz, urlAUdio = m.sms_mensaje if not matchUrlAudio else '', m.sms_mensaje if matchUrlAudio else ''
     camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
     for n in range(cant):
