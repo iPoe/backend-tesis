@@ -83,13 +83,13 @@ def llamar_usuarias(ID,mId,tel=''):
     numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
     if tel == 1:
         numerosUsuarias = ["+57"+obj.contacto.telefono for obj in cons]
-    mensajeVoz = m.sms_mensaje
+    mensajeVoz, urlAUdio = m.sms_mensaje, 'https://firebasestorage.googleapis.com/v0/b/salud-publica-puj.appspot.com/o/audios%2Ffd359110-5245-11ec-89f6-fb7eeda2a29b.mp3?alt=media&token=64f31e0e-3066-40ea-8404-f99c1eebfde9'
     camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
     for n in range(cant):
         res = resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
         res.save()
-        clientVoice.voice_call(mensajeVoz, '', numerosUsuarias[n], str(res.id))
+        clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
     cons = contactosxcampa.objects.filter(campania = ID)
