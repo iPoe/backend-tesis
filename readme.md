@@ -24,4 +24,6 @@ Luego de compilar los archivos para el deployment usa:\
 Enviar los ultimos cambios de la rama para google cloud a git:\
 `$git commit -am "Guardar ultimos cambios"`\
 `$git push origin computeEngine-deployment`\
+En la maquina virtual de google cloud, traer los ultimos cambios:\
+`$git fetch origin`\
 
