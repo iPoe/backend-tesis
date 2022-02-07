@@ -27,3 +27,5 @@ Enviar los ultimos cambios de la rama para google cloud a git:\
 En la maquina virtual de google cloud, traer los ultimos cambios:\
 `$git fetch origin`\
 
+Ver los paquetes de python instalados en el venv:\
+`$sudo pip freeze`\
