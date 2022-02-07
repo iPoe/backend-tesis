@@ -179,11 +179,12 @@ CELERY_RESULT_BACKEND = os.environ["REDIS_URL"]
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 
-
+#Twilio settings and credentials
 TID  = os.environ["TWILIO_ACCOUNT_SID"]
 T_AUTH_TOKEN = os.environ["twilio_auth_token"]
 TNUMBER = os.environ["twilio_number"]
 
+#Mailgun settings and credentials
 EMAIL_USER = os.environ["email_user"]
 EMAIL_PASSWORD = os.environ["email_password"]
 
