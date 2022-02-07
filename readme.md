@@ -19,3 +19,9 @@ Primero se debe compilar el front para el deployment en GCP usando:\
 `$ npm run build`\
 Luego de compilar los archivos para el deployment usa:\
 `$ gcloud app deploy`
+
+#### Despliegue de la API en Google Cloud
+Enviar los ultimos cambios de la rama para google cloud a git:\
+`$git commit -am "Guardar ultimos cambios"`\
+`$git push origin computeEngine-deployment`\
+
