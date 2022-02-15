@@ -188,4 +188,5 @@ TNUMBER = os.environ["twilio_number"]
 EMAIL_USER = os.environ["email_user"]
 EMAIL_PASSWORD = os.environ["email_password"]
 
-
+#Adding auto pk fields in the models
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
