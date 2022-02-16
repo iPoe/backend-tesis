@@ -29,6 +29,7 @@ En la maquina virtual de google cloud, traer los ultimos cambios:\
 
 Ver los paquetes de python instalados en el venv:\
 `$sudo pip freeze`\
-Instalar las variables de entorno necesaria para que la API funciones:\
+Instalar las variables de entorno necesaria para que la API funcione:\
 `$source  ./envVars.sh`\
+Actualiza las variables de entorno del archivo .env y luego has push de la rama
 

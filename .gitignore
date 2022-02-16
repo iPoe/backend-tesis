@@ -1,2 +1,4 @@
 #Ignore setup sh file
 *.sh
+#Ignore the .env file
+.env
