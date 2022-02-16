@@ -31,5 +31,7 @@ Ver los paquetes de python instalados en el venv:\
 `$sudo pip freeze`\
 Instalar las variables de entorno necesaria para que la API funcione:\
 `$source  ./envVars.sh`\
-Actualiza las variables de entorno del archivo .env y luego has push de la rama
+Actualiza las variables de entorno del archivo .env y luego has push de la rama\
+y recuerda siempre que la maquina virtual no levanta la api en la dirección 127.0.0.1\
+por lo cual para poder correr la app de django debes usar la dirección 0.0.0.0.\
 
