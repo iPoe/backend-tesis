@@ -35,3 +35,5 @@ Actualiza las variables de entorno del archivo .env y luego has push de la rama\
 y recuerda siempre que la maquina virtual no levanta la api en la dirección 127.0.0.1\
 por lo cual para poder correr la app de django debes usar la dirección 0.0.0.0.\
 
+Conectarme por terminar de linux a la instancia de compute engine de la api\
+`$ gcloud compute ssh saludpublica-api --project salud-publica-puj --zone us-central1-a`\
