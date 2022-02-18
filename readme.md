@@ -41,3 +41,6 @@ Conectarme por terminar de linux a la instancia de compute engine de la api\
 Correr el script sin perder el terminal:\
 `$ nohup sudo python3 manage.py runserver 0.0.0.0:8000`\
 
+Usar gunicorn para servir la aplicación:\
+`$ sudo gunicorn --bind 0.0.0.0:8000 salud_publica.wsgi`
+
