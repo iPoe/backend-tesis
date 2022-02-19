@@ -44,3 +44,13 @@ Correr el script sin perder el terminal:\
 Usar gunicorn para servir la aplicación:\
 `$ sudo gunicorn --bind 0.0.0.0:8000 salud_publica.wsgi`
 
+Despliega la app en el background con gunicorn
+`$ sudo gunicorn --config dev.py salud_publica.wsgi`
+
+Rastrea los logs que va dejando tu aplicación 
+`$ sudo tail -f /var/log/gunicorn/dev.log`
+
+
+Continue reading these posts:
+-https://realpython.com/django-nginx-gunicorn/
+-https://www.digitalocean.com/community/tutorials/como-configurar-django-con-postgres-nginx-y-gunicorn-en-ubuntu-18-04-es
