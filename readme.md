@@ -50,6 +50,9 @@ Despliega la app en el background con gunicorn
 Rastrea los logs que va dejando tu aplicación 
 `$ sudo tail -f /var/log/gunicorn/dev.log`
 
+Cuando necesites parar gunicorn usa:
+`$ pkill gunicorn`
+
 
 Continue reading these posts:
 -https://realpython.com/django-nginx-gunicorn/

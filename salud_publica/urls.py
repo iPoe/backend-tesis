@@ -15,6 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from django_otp.admin import OTPAdminSite
+  
+admin.site.__class__ = OTPAdminSite
+
 
 urlpatterns = [
 	path('',include('Campaña.urls')),
