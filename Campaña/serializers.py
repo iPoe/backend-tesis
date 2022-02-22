@@ -2,8 +2,18 @@
 from rest_framework import serializers
 from datetime import date
 import datetime
-from .models import Campania,Contacto,Medio,estado_campania,mediosxcampania,Tipo_medio
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from .models import (Campania,
+	Contacto,
+	Medio,
+	estado_campania,
+	mediosxcampania,
+	Tipo_medio,
+	Usuario
+)
+
+
+
 
 def removerTags(s):
 	sP = s.replace('<p>','')

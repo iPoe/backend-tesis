@@ -11,8 +11,21 @@ from django.db.models import Count
 from django.db import transaction
 
 #1cel,2tel,correo3,sms4,wp5
-from .models import Campania,Contacto, Medio,contactosxcampa,Operador,mediosxcampania,Tipo_resultado,resultadosxcampania,estado_campania
-from .serializers import CampañaSerializer,ContactosSerializer,contactosxcampSerializer,MediaSerializer
+from .models import (Campania,
+	Contacto, 
+	Medio,
+	contactosxcampa,
+	Operador,
+	mediosxcampania,
+	Tipo_resultado,
+	resultadosxcampania,
+	estado_campania
+)
+from .serializers import (CampañaSerializer,
+	ContactosSerializer,
+	contactosxcampSerializer,
+	MediaSerializer
+)
 from .tasks import crearTareaCampaña
 from Campaña.tasks import crearTaskxmedioxcamp,disableTaskxCamp
 
@@ -21,8 +34,6 @@ from twilio.twiml.messaging_response import MessagingResponse
 
 from .twilioAPI import WhatsApp
 clientWhatsapp = WhatsApp()
-
-
 
 def change_estado_campania(ID):
 	Camp = Campania.objects.get(pk = ID)
@@ -58,9 +69,6 @@ def recuento_camp(request):
 		print(e)
 		return JsonResponse("Error en la URL de recuento",status=400,safe=False)
 
-	
-
-
 @api_view(['GET'])
 def get_campanias(request):
 	try:
@@ -80,7 +88,6 @@ def get_campanias(request):
 	except Exception as e:
 		print(e)
 		return JsonResponse("Error al obtener recuento campañas",status=201,safe=False)
-
 
 @api_view(['PUT'])
 def updateCamp(request):
@@ -105,7 +112,6 @@ def updateCamp(request):
 		print(e)
 		return JsonResponse("Error en actualizar camp",status=400,safe=False)
 
-
 @api_view(['PUT'])
 def endCamp(request):
 	if request.method == 'PUT':
@@ -124,9 +130,6 @@ def endCamp(request):
 		except Exception as e:
 			print(e)
 			return JsonResponse("Error en finalizar camp",status=400,safe=False)
-
-
-
 
 @api_view(['POST','PATCH','GET'])
 def campania_view(request):	
@@ -167,8 +170,6 @@ def campania_view(request):
 			print(e)
 			return JsonResponse(CampaniaConf.serializerCampania.errors,status=400,safe=False)
 
-
-
 @api_view(['GET'])
 def usuarias_existentes(request):
 	if request.method == 'GET':
@@ -192,8 +193,6 @@ def save_result(request):
 		except Exception as e:
 			print(e)
 			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
-
-
 
 @api_view(['POST'])
 def login_operador(request):
@@ -235,7 +234,6 @@ def login_operador(request):
 			print(e)
 			return JsonResponse("Error al iniciar sesion",status=400,safe=False)
 
-
 def auxHMedio(idm):
 	lista_horas = list()
 	med = mediosxcampania.objects.get(pk=idm)
@@ -247,9 +245,6 @@ def auxHMedio(idm):
 	else:
 		lista_horas = [med.hora1]
 	return lista_horas
-
-
-
 
 def estaux(idcamp):
 	campania = Campania.objects.get(pk = idcamp)
@@ -272,9 +267,6 @@ def estaux(idcamp):
 
 	dataest['medios'] = lista_medios
 	return dataest
-
-
-
 
 @api_view(['POST','PUT'])
 def test_estadisticas(request):
