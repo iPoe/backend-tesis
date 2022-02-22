@@ -14,7 +14,7 @@ Para enviar la rama master a Heroku usa:\
 Para enviar cualquier otra rama a Heroku usa:\
 `$ git push heroku nombrerama:master`
 
-#### Despliegue del front end
+#### Despliegue del front end en Google Cloud
 Primero se debe compilar el front para el deployment en GCP usando:\
 `$ npm run build`\
 Luego de compilar los archivos para el deployment usa:\
@@ -52,6 +52,9 @@ Rastrea los logs que va dejando tu aplicación
 
 Cuando necesites parar gunicorn usa:
 `$ pkill gunicorn`
+
+Cuando necesites conectarte a BD de forma remote usa:
+`$ psql -h 34.135.94.2 -U postgres mydb`
 
 
 Continue reading these posts:

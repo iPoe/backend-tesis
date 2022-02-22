@@ -64,8 +64,14 @@ INSTALLED_APPS = [
 
 
 CORS_ORIGIN_ALLOW_ALL = True
-
-
+CORS_ORIGIN_WHITELIST = [
+    'https://salud-publica-puj.uc.r.appspot.com/'
+]
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated', # make all endpoints private
+    )
+}
 
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -154,6 +160,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_USER_MODEL = 'Campaña.Usuario'
 
 
 # Internationalization

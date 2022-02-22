@@ -1,6 +1,13 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.auth.models import AbstractUser
 
+
+class Usuario(AbstractUser):
+	email = models.EmailField(verbose_name="email", max_length=20, unique=True)
+	clave = models.CharField(max_length=20)
+	def __str__(self):
+		return self.email
 
 class estado_campania(models.Model):
 	#Va a ser por indicador 1:Activo 2:Programado 3:Finalizado
