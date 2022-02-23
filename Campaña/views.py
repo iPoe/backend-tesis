@@ -1,7 +1,8 @@
 
 from typing import Tuple
 from django.http import HttpResponse,JsonResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,6 +10,9 @@ from datetime import date
 import datetime as dt
 from django.db.models import Count
 from django.db import transaction
+from django.contrib.auth import get_user_model
+from django.views.decorators.csrf import ensure_csrf_cookie
+#from accounts.utils import generate_access_token, generate_refresh_token
 
 #1cel,2tel,correo3,sms4,wp5
 from .models import (Campania,
@@ -24,16 +28,23 @@ from .models import (Campania,
 from .serializers import (CampañaSerializer,
 	ContactosSerializer,
 	contactosxcampSerializer,
-	MediaSerializer
+	MediaSerializer,
+	UsuarioSerializer
 )
 from .tasks import crearTareaCampaña
 from Campaña.tasks import crearTaskxmedioxcamp,disableTaskxCamp
-
 from .setup import Camp_setup
 from twilio.twiml.messaging_response import MessagingResponse
-
 from .twilioAPI import WhatsApp
+
+
 clientWhatsapp = WhatsApp()
+
+@api_view(['POST'])
+def login_view(request):
+	return response
+
+
 
 def change_estado_campania(ID):
 	Camp = Campania.objects.get(pk = ID)

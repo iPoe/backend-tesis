@@ -12,7 +12,10 @@ from .models import (Campania,
 	Usuario
 )
 
-
+class UsuarioSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Usuario
+		fields = ['email']
 
 
 def removerTags(s):
