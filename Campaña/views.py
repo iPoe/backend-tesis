@@ -1,18 +1,20 @@
 
 from typing import Tuple
+from urllib import response
 from django.http import HttpResponse,JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import exceptions
 from datetime import date
 import datetime as dt
 from django.db.models import Count
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import ensure_csrf_cookie
-#from accounts.utils import generate_access_token, generate_refresh_token
+from accounts.utils import generate_access_token, generate_refresh_token
 
 #1cel,2tel,correo3,sms4,wp5
 from .models import (Campania,
@@ -23,7 +25,8 @@ from .models import (Campania,
 	mediosxcampania,
 	Tipo_resultado,
 	resultadosxcampania,
-	estado_campania
+	estado_campania,
+	Usuario
 )
 from .serializers import (CampañaSerializer,
 	ContactosSerializer,
@@ -42,6 +45,26 @@ clientWhatsapp = WhatsApp()
 
 @api_view(['POST'])
 def login_view(request):
+	data = request.data
+	email,password = data['email'],data['clave']
+	response = Response()
+	if (email is None) or (password is None):
+		raise exceptions.AuthenticationFailed('email and password required')
+	
+	operador = Usuario.objects.filter(email = email).first()
+	if(operador is None):
+		raise exceptions.AuthenticationFailed('user not found')
+	if(not operador.check_password(password)):
+		raise exceptions.AuthenticationFailed('wrong password')
+	serialized_user = UsuarioSerializer(operador)
+	access_token = generate_access_token(operador)
+	refresh_token = generate_refresh_token(operador)
+
+	response .set_cookie(key='refreshtoken', value= refresh_token)
+	response.data = {
+		'acces_token' : access_token,
+		'usuario' : serialized_user,
+	}
 	return response
 
 
