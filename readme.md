@@ -55,7 +55,7 @@ poder usar git pull sin errores:\
 
 ## Cuando quieras borrar todo
 Como recordaras es usual que tengas que borrar todo e iniciar desde cero
-por lo cual aqui te van unos tips de como lograrlo:\
+por lo cual aqui te van unos tips de como lograrlo:
 - Conectate por medio de psql a la BD.
 - Luego borrale y vuelve la a crear usando `$ DROP DATABASE "mydb";` y luego `$ CREATE DATABASE mydb`
 - Si la borras te recuerdo que ya no tienes un dispositivo con 2FA por lo cual debes ir los urls principales y comentar la linea
