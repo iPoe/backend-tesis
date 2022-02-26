@@ -56,9 +56,9 @@ INSTALLED_APPS = [
     #CORS
     'corsheaders',
     #OTP AUTH,
-    # 'django_otp',
-    # 'django_otp.plugins.otp_totp',
-    # 'django_otp.plugins.otp_static',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_static',
 ]
 
 
@@ -100,7 +100,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     #OTP Middleware
-    # 'django_otp.middleware.OTPMiddleware',
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #Cors para permitir peticiones desde todas partes
