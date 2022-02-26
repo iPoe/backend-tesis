@@ -13,7 +13,7 @@ import datetime as dt
 from django.db.models import Count
 from django.db import transaction
 from django.contrib.auth import get_user_model
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_protect
 from .utils import generate_access_token, generate_refresh_token
 
 #1cel,2tel,correo3,sms4,wp5
@@ -44,6 +44,8 @@ from .twilioAPI import WhatsApp
 clientWhatsapp = WhatsApp()
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
+@csrf_protect
 def login_view(request):
 	data = request.data
 	email,password = data['email'],data['clave']
