@@ -90,7 +90,3 @@ class mediosxcampania(models.Model):
 class resultadosxmedio(models.Model):
 	tipo_resultado = models.ForeignKey(Tipo_resultado,on_delete=models.PROTECT)
 	TipoMedio = models.ForeignKey(Tipo_medio,on_delete=models.PROTECT)
-
-
-#Deberia crear una clase para
-
