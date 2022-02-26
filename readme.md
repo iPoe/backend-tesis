@@ -54,7 +54,7 @@ Cuando necesites parar gunicorn usa:\
 `$ pkill gunicorn`\
 
 Cuando necesites conectarte a BD de forma remote usa:\
-`$ psql -h 34.135.94.2 -U postgres mydb`\
+`$ psql -h 34.135.94.2 -U postgres postgres`\
 
 Debido a que usas una llave de deployment de github para traer los cambios\
 a la maquina virtual de Google, recuerda usar los siguientes comandos para\
@@ -62,6 +62,13 @@ poder usar git pull sin errores:\
 `$ eval ssh-agent`\
 `$ ssh-add ~/.ssh/id_rsa`\
 `$ git pull`\
+
+Como recordaras es usual que tengas que borrar todo e iniciar desde cero\
+por lo cual aqui te van unos tips de como lograrlo:\
+- Conectate por medio de psql a la BD.
+- Luego borrale y vuelve la a crear usando `$ DROP DATABASE "mydb";` y luego `$ CREATE DATABASE mydb`
+- Si la borras te recuerda que ya no tiene un dispositivo con 2FA por lo cual debes ir los urls principales y comentar la linea\
+de admin site
 
 
 Continue reading these posts:
