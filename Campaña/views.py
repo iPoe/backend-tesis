@@ -14,7 +14,7 @@ from django.db.models import Count
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import ensure_csrf_cookie
-from utils import generate_access_token, generate_refresh_token
+from .utils import generate_access_token, generate_refresh_token
 
 #1cel,2tel,correo3,sms4,wp5
 from .models import (Campania,
