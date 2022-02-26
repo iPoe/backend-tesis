@@ -54,14 +54,14 @@ Cuando necesites parar gunicorn usa:\
 `$ pkill gunicorn`\
 
 Cuando necesites conectarte a BD de forma remote usa:\
-`$ psql -h 34.135.94.2 -U postgres postgres`\
+`$ psql -h 34.135.94.2 -U postgres postgres`
 
 Debido a que usas una llave de deployment de github para traer los cambios
 a la maquina virtual de Google, recuerda usar los siguientes comandos para
 poder usar git pull sin errores:\
 `$ eval ssh-agent`\
 `$ ssh-add ~/.ssh/id_rsa`\
-`$ git pull`\
+`$ git pull`
 
 Como recordaras es usual que tengas que borrar todo e iniciar desde cero
 por lo cual aqui te van unos tips de como lograrlo:\
