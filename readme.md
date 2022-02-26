@@ -29,20 +29,10 @@ En la maquina virtual de google cloud, traer los ultimos cambios:\
 
 Ver los paquetes de python instalados en el venv:\
 `$sudo pip freeze`\
-Instalar las variables de entorno necesaria para que la API funcione:\
-`$source  ./envVars.sh`\
-Actualiza las variables de entorno del archivo .env y luego has push de la rama\
-y recuerda siempre que la maquina virtual no levanta la api en la dirección 127.0.0.1\
-por lo cual para poder correr la app de django debes usar la dirección 0.0.0.0.
+
 
 Conectarme por terminar de linux a la instancia de compute engine de la api\
 `$ gcloud compute ssh saludpublica-api --project salud-publica-puj --zone us-central1-a`\
-
-Correr el script sin perder el terminal:\
-`$ nohup sudo python3 manage.py runserver 0.0.0.0:8000`\
-
-Usar gunicorn para servir la aplicación:\
-`$ sudo gunicorn --bind 0.0.0.0:8000 salud_publica.wsgi`\
 
 Despliega la app en el background con gunicorn\
 `$ sudo gunicorn --config dev.py salud_publica.wsgi`\
@@ -63,6 +53,7 @@ poder usar git pull sin errores:\
 `$ ssh-add ~/.ssh/id_rsa`\
 `$ git pull`
 
+## Cuando quieras borrar todo
 Como recordaras es usual que tengas que borrar todo e iniciar desde cero
 por lo cual aqui te van unos tips de como lograrlo:\
 - Conectate por medio de psql a la BD.
