@@ -42,19 +42,26 @@ Correr el script sin perder el terminal:\
 `$ nohup sudo python3 manage.py runserver 0.0.0.0:8000`\
 
 Usar gunicorn para servir la aplicación:\
-`$ sudo gunicorn --bind 0.0.0.0:8000 salud_publica.wsgi`
+`$ sudo gunicorn --bind 0.0.0.0:8000 salud_publica.wsgi`\
 
-Despliega la app en el background con gunicorn
-`$ sudo gunicorn --config dev.py salud_publica.wsgi`
+Despliega la app en el background con gunicorn\
+`$ sudo gunicorn --config dev.py salud_publica.wsgi`\
 
-Rastrea los logs que va dejando tu aplicación 
-`$ sudo tail -f /var/log/gunicorn/dev.log`
+Rastrea los logs que va dejando tu aplicación \
+`$ sudo tail -f /var/log/gunicorn/dev.log`\
 
-Cuando necesites parar gunicorn usa:
-`$ pkill gunicorn`
+Cuando necesites parar gunicorn usa:\
+`$ pkill gunicorn`\
 
-Cuando necesites conectarte a BD de forma remote usa:
-`$ psql -h 34.135.94.2 -U postgres mydb`
+Cuando necesites conectarte a BD de forma remote usa:\
+`$ psql -h 34.135.94.2 -U postgres mydb`\
+
+Debido a que usas una llave de deployment de github para traer los cambios\
+a la maquina virtual de Google, recuerda usar los siguientes comandos para\
+poder usar git pull sin errores:\
+`$ eval ssh-agent`\
+`$ ssh-add ~/.ssh/id_rsa`\
+`$ git pull`\
 
 
 Continue reading these posts:
