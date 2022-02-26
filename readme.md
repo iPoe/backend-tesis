@@ -25,12 +25,9 @@ Enviar los ultimos cambios de la rama para google cloud a git:\
 `$git commit -am "Guardar ultimos cambios"`\
 `$git push origin computeEngine-deployment`\
 En la maquina virtual de google cloud, traer los ultimos cambios:\
-`$git fetch origin`\
-
+`$git fetch origin`
 Ver los paquetes de python instalados en el venv:\
-`$sudo pip freeze`\
-
-
+`$sudo pip freeze`
 Conectarme por terminar de linux a la instancia de compute engine de la api\
 `$ gcloud compute ssh saludpublica-api --project salud-publica-puj --zone us-central1-a`
 
