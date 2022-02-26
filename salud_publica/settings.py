@@ -161,7 +161,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'Campaña.Usuario'
+# AUTH_USER_MODEL = 'Campaña.Usuario'
 
 
 # Internationalization
