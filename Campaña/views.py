@@ -58,7 +58,7 @@ def login_view(request):
 		raise exceptions.AuthenticationFailed('user not found')
 	if(not operador.clave == password):
 		raise exceptions.AuthenticationFailed('wrong password')
-	serialized_user = UsuarioSerializer(operador)
+	# serialized_user = UsuarioSerializer(operador)
 	access_token = generate_access_token(operador)
 	refresh_token = generate_refresh_token(operador)
 
