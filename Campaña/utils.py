@@ -9,7 +9,7 @@ def generate_access_token(user):
         'iat' : datetime.datetime.utcnow(),
     }
     acces_token = jwt.encode(acces_token_payload,
-                    settings.SECRE_KEY, algorithm = 'HS256').decode('utf-8')
+                    settings.SECRET_KEY, algorithm = 'HS256').decode('utf-8')
     return acces_token
 
 def generate_refresh_token(user):
