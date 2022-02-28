@@ -65,7 +65,7 @@ def login_view(request):
 	response .set_cookie(key='refreshtoken', value= refresh_token)
 	response.data = {
 		'acces_token' : access_token,
-		'usuario' : serialized_user,
+		'usuario' : operador.id,
 	}
 	return response
 
