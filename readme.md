@@ -54,6 +54,10 @@ por lo cual aqui te van unos tips de como lograrlo:
 - Luego borrale y vuelve la a crear usando `$ DROP DATABASE "mydb";` y luego `$ CREATE DATABASE mydb`
 - Si la borras te recuerdo que ya no tienes un dispositivo con 2FA por lo cual debes ir los urls principales y comentar la linea
 de admin site que usa OTP auth
+## Cuando necesites cambiar la versión de node
+Es muy probable que te encuentres usando diferentes veriones de node, por lo cual es bueno que instales nvm, y para que compiles sin errores el front uses la versión 12, abajo dejo el comando de como se cambia:\
+`$ nvm use 12`
+
 
 
 Continue reading these posts:
