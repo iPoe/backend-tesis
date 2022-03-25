@@ -61,5 +61,6 @@ Es muy probable que te encuentres usando diferentes veriones de node, por lo cua
 
 
 Continue reading these posts:
+- https://crown-s.medium.com/set-up-redis-on-gcp-virtual-machine-c84c4fac456
 - https://realpython.com/django-nginx-gunicorn/
 - https://www.digitalocean.com/community/tutorials/como-configurar-django-con-postgres-nginx-y-gunicorn-en-ubuntu-18-04-es
