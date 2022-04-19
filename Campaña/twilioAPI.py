@@ -55,7 +55,7 @@ class VoiceCall:
             twiml = response,
             to=to,
             from_=self.twilio_number,
-            status_callback='https://coffee-cuscus-4020.twil.io/status-callback-voice?idLlamada='+idLlamada,
+            status_callback='https://voice-status-callback-2487.twil.io/status-callback-voice?idLlamada='+idLlamada,
             status_callback_method='POST',
             timeout=30,
         )
