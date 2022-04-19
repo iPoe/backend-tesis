@@ -84,7 +84,7 @@ def llamar_usuarias(ID,mId,tel=''):
     if tel == 1:
         numerosUsuarias = ["+57"+obj.contacto.telefono for obj in cons]
     matchUrlAudio = True if "http" in m.sms_mensaje else False
-    mensajeVoz, urlAUdio = m.sms_mensaje if not matchUrlAudio else '', m.sms_mensaje if matchUrlAudio else ''
+    mensajeVoz, urlAUdio = m.sms_mensaje if not matchUrlAudio else '', m.sms_mensaje+".mp3" if matchUrlAudio else ''
     camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
     for n in range(cant):
