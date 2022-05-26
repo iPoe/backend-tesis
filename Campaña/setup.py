@@ -21,7 +21,8 @@ class Camp_setup:
         print("La data de la campania es: \n")
         print(self.datacamp)
         print("EL serializes dice:\n")
-        print(self.serializerCampania.save())
+        print(self.serializerCampania.is_valid())
+        print(self.serializerCampania.errors)
         dcontactos = self.data_contactos
         for x in dcontactos:
             x['celular'] = str(x['celular'])
