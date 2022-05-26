@@ -35,7 +35,7 @@ class Camp_setup:
                     if self.camp.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
                         objs = [contactosxcampa(
-                            campania = self.camp,
+                            campania = self.camp.id,
                             contacto =c,nombreContactos=self.datacamp['nombreContactos'])
                             for c in contactos
                         ]
@@ -63,4 +63,5 @@ class Camp_setup:
                     print(self.mediosSerial.errors)
                     return self.mediosSerial.errors
         except Exception as e:
+            print("exception Encountered")
             print(e)
