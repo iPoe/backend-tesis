@@ -4,7 +4,7 @@ from django.db import transaction
 
 
 class Camp_setup:
-    #Cosas por añadir
+
     def __init__(self,data):
         self.data_contactos = data['contactos']
         self.data_medios = data['medios']
@@ -14,6 +14,7 @@ class Camp_setup:
         self.serializerCampania = CampañaSerializer(data = self.datacamp)
         self.serializerContactos = ContactosSerializer
         self.mediosSerial = MediaSerializer
+        self.camp = None
 
     def guardarContactos(self):
         dcontactos = self.data_contactos
