@@ -382,6 +382,8 @@ def reply_whatsapp(request):
 							tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
 							res = resultadosxcampania.objects.update_or_create( contacto_cc=usuaria.identidad,
 							 campania_id = c.id, medio_id= medio.id, defaults=	{'Tipo_resultado' : tipoRes} )
+							return JsonResponse("Respuesta de whatsapp enviada",status=201,safe=False)
+
 		except Exception as e:
 			print(e)
 			return JsonResponse("Error al responder al wp",status=400,safe=False)
