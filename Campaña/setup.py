@@ -38,19 +38,25 @@ class Camp_setup:
                     return self.camp.id
         except Exception as e:
             print(e)
+            print(self.serializerCampania)
+            print(self.serializerContactos)
             return self.serializerContactos.errors
 
     
     def guardarMedios(self,ID,data):
         dmedios = data
-        idcam = Campania.objects.get(pk=ID).id
-        for m in dmedios:
-            m['campID']= idcam
-        #print(dmedios)
-        self.mediosSerial = MediaSerializer(data=dmedios,many=True)
-        if self.mediosSerial.is_valid():
-            self.mediosSerial.save()
-            return "Medios Creados!"
-        else:
-            print(self.mediosSerial.errors)
-            return self.mediosSerial.errors
+        try:
+            with transaction.atomic():
+                idcam = Campania.objects.get(pk=ID).id
+                for m in dmedios:
+                    m['campID']= idcam
+                #print(dmedios)
+                self.mediosSerial = MediaSerializer(data=dmedios,many=True)
+                if self.mediosSerial.is_valid():
+                    self.mediosSerial.save()
+                    return "Medios Creados!"
+                else:
+                    print(self.mediosSerial.errors)
+                    return self.mediosSerial.errors
+        except Exception as e:
+            print(e)

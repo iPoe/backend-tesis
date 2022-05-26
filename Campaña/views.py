@@ -200,10 +200,9 @@ def campania_view(request):
 					if CampaniaConf.camp.estado.descripcion == 1:
 						crearTaskxmedioxcamp(a)
 					return JsonResponse(CampaniaConf.serializerCampania.data,status=201,safe=False)
-
-			#return JsonResponse(CampaniaConf.serializerCampania.errors,status=400,safe=False)
 		except Exception as e:
 			print(e)
+			print(CampaniaConf.serializerCampania.errors)
 			return JsonResponse(CampaniaConf.serializerCampania.errors,status=400,safe=False)
 
 @api_view(['GET'])
