@@ -27,15 +27,12 @@ class Camp_setup:
             x['celular'] = str(x['celular'])
             x['telefono'] = str(x['telefono'])
         self.serializerContactos = ContactosSerializer(data=dcontactos,many=True)
-        print("Info de la campaña creada dice:")
-        hola = self.camp.save()
-        print(hola)
         try:
             with transaction.atomic():
                 if self.serializerContactos.is_valid() and self.camp.is_valid():
                     self.camp.tasksIds = []
                     campania = self.camp.save()
-                    print(campania)
+                    print(Campania.objects)
                     if self.campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
                         objs = [contactosxcampa(

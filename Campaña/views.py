@@ -194,6 +194,7 @@ def campania_view(request):
 			with transaction.atomic():
 				mediosdata = request.data['medios']
 				CampaniaConf = Camp_setup(request.data)
+				print("Estado en view de la camp: "+ CampaniaConf.camp.is_valid())
 				if CampaniaConf.camp.is_valid():
 					a = CampaniaConf.guardarContactos()
 					r = CampaniaConf.guardarMedios(a,mediosdata)
