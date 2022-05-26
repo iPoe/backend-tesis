@@ -17,6 +17,8 @@ class Camp_setup:
         self.camp = None
 
     def guardarContactos(self):
+        print("DATA DE LA CAMPANIA")
+        print(self.datacamp)
         dcontactos = self.data_contactos
         for x in dcontactos:
             x['celular'] = str(x['celular'])
