@@ -18,8 +18,8 @@ class Camp_setup:
 
     def guardarContactos(self):
         print("DATA DE LA CAMPANIA")
-        print(self.datacamp)
-        print(self.serializerCampania.save())
+        print("La data de la campania es: "+self.datacamp)
+        print("EL serializes dice:"+self.serializerCampania.save())
         dcontactos = self.data_contactos
         for x in dcontactos:
             x['celular'] = str(x['celular'])
@@ -41,9 +41,8 @@ class Camp_setup:
                         contactosxcampa.objects.bulk_create(objs)
                     return self.camp.id
         except Exception as e:
+            print("Exception enconuntered")
             print(e)
-            print(self.serializerCampania)
-            print(self.serializerContactos)
             return self.serializerContactos.errors
 
     
