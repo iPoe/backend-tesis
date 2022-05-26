@@ -194,16 +194,16 @@ def campania_view(request):
 			with transaction.atomic():
 				mediosdata = request.data['medios']
 				CampaniaConf = Camp_setup(request.data)
-				if CampaniaConf.serializerCampania.is_valid():
+				if CampaniaConf.camp.is_valid():
 					a = CampaniaConf.guardarContactos()
 					r = CampaniaConf.guardarMedios(a,mediosdata)
 					if CampaniaConf.camp.estado.descripcion == 1:
 						crearTaskxmedioxcamp(a)
-					return JsonResponse(CampaniaConf.serializerCampania.data,status=201,safe=False)
+					return JsonResponse(CampaniaConf.camp.data,status=201,safe=False)
 		except Exception as e:
 			print(e)
-			print(CampaniaConf.serializerCampania.errors)
-			return JsonResponse(CampaniaConf.serializerCampania.errors,status=400,safe=False)
+			print(CampaniaConf.camp.errors)
+			return JsonResponse(CampaniaConf.camp.errors,status=400,safe=False)
 
 @api_view(['GET'])
 def usuarias_existentes(request):
