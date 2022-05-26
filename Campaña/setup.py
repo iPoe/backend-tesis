@@ -19,6 +19,7 @@ class Camp_setup:
     def guardarContactos(self):
         print("DATA DE LA CAMPANIA")
         print(self.datacamp)
+        print(self.serializerCampania.save())
         dcontactos = self.data_contactos
         for x in dcontactos:
             x['celular'] = str(x['celular'])
