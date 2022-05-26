@@ -29,10 +29,11 @@ class Camp_setup:
         self.serializerContactos = ContactosSerializer(data=dcontactos,many=True)
         try:
             with transaction.atomic():
-                if self.serializerContactos.is_valid():
+                if self.serializerContactos.is_valid() and self.camp.is_valid():
                     self.camp.tasksIds = []
                     campania = self.camp.save()
-                    if self.camp.estado.descripcion == 1:
+                    print(campania)
+                    if self.campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
                         objs = [contactosxcampa(
                             campania = campania.id,
