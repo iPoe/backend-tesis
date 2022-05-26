@@ -11,18 +11,17 @@ class Camp_setup:
         self.datacamp = data
         self.datacamp.pop('contactos')
         self.datacamp.pop('medios')
-        self.serializerCampania = CampañaSerializer(data = self.datacamp)
+        self.camp = CampañaSerializer(data = self.datacamp)
         self.serializerContactos = ContactosSerializer
         self.mediosSerial = MediaSerializer
-        self.camp = None
 
     def guardarContactos(self):
         print("DATA DE LA CAMPANIA")
         print("La data de la campania es: \n")
         print(self.datacamp)
         print("EL serializes dice:\n")
-        print(self.serializerCampania.is_valid())
-        print(self.serializerCampania.errors)
+        print(self.camp.is_valid())
+        print(self.camp)
         dcontactos = self.data_contactos
         for x in dcontactos:
             x['celular'] = str(x['celular'])
@@ -31,7 +30,6 @@ class Camp_setup:
         try:
             with transaction.atomic():
                 if self.serializerContactos.is_valid():
-                    self.camp = self.serializerCampania.save()
                     self.camp.tasksIds = []
                     self.camp.save()
                     if self.camp.estado.descripcion == 1:
