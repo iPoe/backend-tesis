@@ -63,5 +63,5 @@ class Camp_setup:
                     print(self.mediosSerial.errors)
                     return self.mediosSerial.errors
         except Exception as e:
-            print("exception Encountered")
+            print("exception Encountered in create media func")
             print(e)
