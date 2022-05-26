@@ -1,6 +1,7 @@
 from Campaña.models import Campania,Medio,mediosxcampania,contactosxcampa
 from .serializers import CampañaSerializer,ContactosSerializer,contactosxcampSerializer,MediaSerializer
-from Campaña.tasks import crearTaskxmedioxcamp
+from django.db import transaction
+
 
 class Camp_setup:
     #Cosas por añadir
@@ -15,29 +16,29 @@ class Camp_setup:
         self.mediosSerial = MediaSerializer
 
     def guardarContactos(self):
-        # self.camp = self.serializerCampania.save()
         dcontactos = self.data_contactos
         for x in dcontactos:
             x['celular'] = str(x['celular'])
             x['telefono'] = str(x['telefono'])
-        #print(dcontactos)
         self.serializerContactos = ContactosSerializer(data=dcontactos,many=True)
-        if self.serializerContactos.is_valid():
-            self.camp = self.serializerCampania.save()
-            self.camp.tasksIds = []
-            self.camp.save()
-            if self.camp.estado.descripcion == 1:
-                print("ENTRO",self.camp.id)
-            contactos = self.serializerContactos.save()
-            objs = [contactosxcampa(
-                campania = self.camp,
-                contacto =c,nombreContactos=self.datacamp['nombreContactos'])
-                for c in contactos
-            ]
-            contactosxcampa.objects.bulk_create(objs)
-            return self.camp.id
-        else:
-            return serializerContactos.errors
+        try:
+            with transaction.atomic():
+                if self.serializerContactos.is_valid():
+                    self.camp = self.serializerCampania.save()
+                    self.camp.tasksIds = []
+                    self.camp.save()
+                    if self.camp.estado.descripcion == 1:
+                        contactos = self.serializerContactos.save()
+                        objs = [contactosxcampa(
+                            campania = self.camp,
+                            contacto =c,nombreContactos=self.datacamp['nombreContactos'])
+                            for c in contactos
+                        ]
+                        contactosxcampa.objects.bulk_create(objs)
+                    return self.camp.id
+        except Exception as e:
+            print(e)
+            return self.serializerContactos.errors
 
     
     def guardarMedios(self,ID,data):
