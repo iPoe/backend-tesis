@@ -1,22 +1,75 @@
 
+from typing import Tuple
+from urllib import response
 from django.http import HttpResponse,JsonResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import exceptions
 from datetime import date
 import datetime as dt
 from django.db.models import Count
 from django.db import transaction
-
+from django.contrib.auth import get_user_model
+from django.views.decorators.csrf import ensure_csrf_cookie
+from .utils import generate_access_token, generate_refresh_token
 
 #1cel,2tel,correo3,sms4,wp5
-from .models import Campania,Contacto,contactosxcampa,Operador,mediosxcampania,Tipo_resultado,resultadosxcampania,estado_campania
-from .serializers import CampañaSerializer,ContactosSerializer,contactosxcampSerializer,MediaSerializer
+from .models import (Campania,
+	Contacto, 
+	Medio,
+	contactosxcampa,
+	Operador,
+	mediosxcampania,
+	Tipo_resultado,
+	resultadosxcampania,
+	estado_campania,
+	Usuario
+)
+from .serializers import (CampañaSerializer,
+	ContactosSerializer,
+	contactosxcampSerializer,
+	MediaSerializer,
+	UsuarioSerializer
+)
 from .tasks import crearTareaCampaña
 from Campaña.tasks import crearTaskxmedioxcamp,disableTaskxCamp
-
 from .setup import Camp_setup
+from twilio.twiml.messaging_response import MessagingResponse
+from .twilioAPI import WhatsApp
+
+
+clientWhatsapp = WhatsApp()
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@ensure_csrf_cookie
+def login_view(request):
+	data = request.data
+	email,password = data['email'],data['clave']
+	response = Response()
+	if (email is None) or (password is None):
+		raise exceptions.AuthenticationFailed('email and password required')
+	
+	operador = Usuario.objects.filter(email = email).first()
+	if(operador is None):
+		raise exceptions.AuthenticationFailed('user not found')
+	if(not operador.clave == password):
+		raise exceptions.AuthenticationFailed('wrong password')
+	# serialized_user = UsuarioSerializer(operador)
+	access_token = generate_access_token(operador)
+	refresh_token = generate_refresh_token(operador)
+
+	response .set_cookie(key='refreshtoken', value= refresh_token)
+	response.data = {
+		'acces_token' : access_token,
+		'usuario' : operador.id,
+	}
+	return response
+
+
 
 def change_estado_campania(ID):
 	Camp = Campania.objects.get(pk = ID)
@@ -52,9 +105,6 @@ def recuento_camp(request):
 		print(e)
 		return JsonResponse("Error en la URL de recuento",status=400,safe=False)
 
-	
-
-
 @api_view(['GET'])
 def get_campanias(request):
 	try:
@@ -74,7 +124,6 @@ def get_campanias(request):
 	except Exception as e:
 		print(e)
 		return JsonResponse("Error al obtener recuento campañas",status=201,safe=False)
-
 
 @api_view(['PUT'])
 def updateCamp(request):
@@ -99,7 +148,6 @@ def updateCamp(request):
 		print(e)
 		return JsonResponse("Error en actualizar camp",status=400,safe=False)
 
-
 @api_view(['PUT'])
 def endCamp(request):
 	if request.method == 'PUT':
@@ -118,9 +166,6 @@ def endCamp(request):
 		except Exception as e:
 			print(e)
 			return JsonResponse("Error en finalizar camp",status=400,safe=False)
-
-
-
 
 @api_view(['POST','PATCH','GET'])
 def campania_view(request):	
@@ -161,8 +206,6 @@ def campania_view(request):
 			print(e)
 			return JsonResponse(CampaniaConf.serializerCampania.errors,status=400,safe=False)
 
-
-
 @api_view(['GET'])
 def usuarias_existentes(request):
 	if request.method == 'GET':
@@ -186,8 +229,6 @@ def save_result(request):
 		except Exception as e:
 			print(e)
 			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
-
-
 
 @api_view(['POST'])
 def login_operador(request):
@@ -229,7 +270,6 @@ def login_operador(request):
 			print(e)
 			return JsonResponse("Error al iniciar sesion",status=400,safe=False)
 
-
 def auxHMedio(idm):
 	lista_horas = list()
 	med = mediosxcampania.objects.get(pk=idm)
@@ -241,9 +281,6 @@ def auxHMedio(idm):
 	else:
 		lista_horas = [med.hora1]
 	return lista_horas
-
-
-
 
 def estaux(idcamp):
 	campania = Campania.objects.get(pk = idcamp)
@@ -267,48 +304,86 @@ def estaux(idcamp):
 	dataest['medios'] = lista_medios
 	return dataest
 
+@api_view(['POST','PUT'])
+def test_estadisticas(request):
+	if request.method == 'PUT':
+		try:
+			with transaction.atomic():
 
+				idcampania = request.data['id']
+				campania,dataest = Campania.objects.get(pk = idcampania),estaux(idcampania)
+				resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc',
+				'medio_id','Tipo_resultado').order_by('contacto_cc','medio_id')
+				
+				i = 1
+				dicresxmed = {}
+				if len(resultadosCampania) > 0:
+					contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
+					for res in resultadosCampania:
+						#contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
+						if res['contacto_cc']!= contacantiguo:
+							contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+							diccont = contSer.data
+							dicfinal = {**diccont,**dicresxmed}
+							listausers.append(dicfinal)
+							dicresxmed,i = {},1
+						strMedio = "medio_{}".format(i)
+						dicresxmed[strMedio] = "Si" if res['Tipo_resultado'] == 1 else "No"
+						contacantiguo = res['contacto_cc']
+						i+=1
 
+					contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+					diccont = contSer.data
+					dicfinal = {**diccont,**dicresxmed}
+					listausers.append(dicfinal)
+					dataest['estadistica'] = listausers
+				else:
+					dataest['estadistica'] = []
+
+				return JsonResponse(dataest,status=201,safe=False)
+				
+		except Exception as e:
+			print("Un error ocurrio en las estadisticas")
+			print(e)
+			return JsonResponse("Error al cargar las estadisticas",status=400,safe=False)
+	elif request.method == 'POST':
+		try:
+			with transaction.atomic():
+				data,textRes = request.data,"no"
+				print(data)
+				idres = int(data['idLlamada'])
+				if data['res'] == 'completed' or data['res'] == 'delivered':
+					textRes = "si"
+				tipoRes = Tipo_resultado.objects.get(descripcion = textRes)
+				res = resultadosxcampania.objects.update_or_create(pk = idres,defaults={'Tipo_resultado':tipoRes})
+				return JsonResponse("Update completed",status=201,safe=False)
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
 
 @api_view(['POST'])
-def test_estadisticas(request):
-	try:
-		with transaction.atomic():
+def reply_whatsapp(request):
+	if request.method == 'POST':
+		try:
+			usuaria = Contacto.objects.filter(celular=request.data['WaId'][2:]).first()
+			usuariasCampaña = contactosxcampa.objects.filter(contacto=usuaria)
+			campaña = []
+			for resultado in usuariasCampaña:
+				if resultado.campania.estado == estado_campania.objects.get(descripcion=1):
+					campaña.append(resultado.campania)
+			if len(campaña):
+				for c in campaña:
+					medsxcamp = mediosxcampania.objects.filter(campania_id=c.id)
+					for m in medsxcamp:
+						medio = Medio.objects.get(pk = m.medio_id.id)
+						if medio.tipo_medio.descripcion == 5:
+							clientWhatsapp.send_message( medio.sms_mensaje ,
+							request.data['WaId'],'Reply de wp')
+							tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
+							res = resultadosxcampania.objects.update_or_create( contacto_cc=usuaria.identidad,
+							 campania_id = c.id, medio_id= medio.id, defaults=	{'Tipo_resultado' : tipoRes} )
+							return JsonResponse("Respuesta de whatsapp enviada",status=201,safe=False)
 
-			idcampania = request.data['id']
-			campania,dataest = Campania.objects.get(pk = idcampania),estaux(idcampania)
-			resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc',
-			'medio_id','Tipo_resultado').order_by('contacto_cc','medio_id')
-			
-			i = 1
-			dicresxmed = {}
-			if len(resultadosCampania) > 0:
-				contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
-				for res in resultadosCampania:
-					#contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
-					if res['contacto_cc']!= contacantiguo:
-						contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
-						diccont = contSer.data
-						dicfinal = {**diccont,**dicresxmed}
-						listausers.append(dicfinal)
-						dicresxmed,i = {},1
-					strMedio = "medio_{}".format(i)
-					dicresxmed[strMedio] = "Si" if res['Tipo_resultado'] == 1 else "No"
-					contacantiguo = res['contacto_cc']
-					i+=1
-
-				contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
-				diccont = contSer.data
-				dicfinal = {**diccont,**dicresxmed}
-				listausers.append(dicfinal)
-				dataest['estadistica'] = listausers
-			else:
-				dataest['estadistica'] = []
-
-			return JsonResponse(dataest,status=201,safe=False)
-			
-	except Exception as e:
-		print(e)
-		return JsonResponse("Error al cargar las estadisticas",status=400,safe=False)
-
-
+		except Exception as e:
+			print(e)
+			return JsonResponse("Error al responder al wp",status=400,safe=False)

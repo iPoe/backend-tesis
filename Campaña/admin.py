@@ -1,5 +1,16 @@
 from django.contrib import admin
-from .models import Campania,estado_campania,Operador,Contacto,contactosxcampa,Medio,Tipo_medio,mediosxcampania,resultadosxcampania,Tipo_resultado
+from .models import (Campania,
+    estado_campania,
+    Operador,
+    Contacto,
+    contactosxcampa,
+    Medio,
+    Tipo_medio,
+    mediosxcampania,
+    resultadosxcampania,
+    Tipo_resultado,
+    Usuario
+)
 
 admin.site.register(Campania)
 admin.site.register(estado_campania)
@@ -11,8 +22,4 @@ admin.site.register(Tipo_medio)
 admin.site.register(mediosxcampania)
 admin.site.register(resultadosxcampania)
 admin.site.register(Tipo_resultado)
-
-
-
-
-# Register your models here.
+admin.site.register(Usuario)

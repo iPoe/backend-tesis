@@ -31,9 +31,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['.contactall.me']
 
 
 # Application definition
@@ -55,14 +55,23 @@ INSTALLED_APPS = [
     
     #CORS
     'corsheaders',
-    #'sslserver',
+    #OTP AUTH,
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_static',
 ]
 
 
 
 CORS_ORIGIN_ALLOW_ALL = True
-
-
+CORS_ORIGIN_WHITELIST = [
+    'https://contactall-343612.uc.r.appspot.com/'
+]
+# REST_FRAMEWORK = {
+#     'DEFAULT_PERMISSION_CLASSES': (
+#         'rest_framework.permissions.IsAuthenticated', # make all endpoints private
+#     )
+# }
 
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -90,6 +99,8 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    #OTP Middleware
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #Cors para permitir peticiones desde todas partes
@@ -150,6 +161,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'Campaña.Usuario'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -179,12 +192,14 @@ CELERY_RESULT_BACKEND = os.environ["REDIS_URL"]
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 
-
+#Twilio settings and credentials
 TID  = os.environ["TWILIO_ACCOUNT_SID"]
 T_AUTH_TOKEN = os.environ["twilio_auth_token"]
 TNUMBER = os.environ["twilio_number"]
 
+#Mailgun settings and credentials
 EMAIL_USER = os.environ["email_user"]
 EMAIL_PASSWORD = os.environ["email_password"]
 
-
+#Adding auto pk fields in the models
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

@@ -11,7 +11,7 @@ def load_twilio_config():
     twilio_account_sid = settings.TID
     twilio_auth_token = settings.T_AUTH_TOKEN
     twilio_number = settings.TNUMBER
-    twilio_number_whatsapp = '+14155238886'
+    twilio_number_whatsapp = settings.TNUMBER
     return twilio_number, twilio_account_sid, twilio_auth_token, twilio_number_whatsapp
 
 
@@ -69,7 +69,7 @@ class WhatsApp:
         self.twilio_number_whatsapp = twilio_number_whatsapp
         self.twilio_client = Client(twilio_account_sid, twilio_auth_token)
 
-    def send_message(self, body, to):
+    def send_message(self, body, to,idLlamada):
         message_whatsapp = self.twilio_client.messages.create(
             body=body,
             to='whatsapp:'+to,
