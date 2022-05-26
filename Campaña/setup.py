@@ -31,15 +31,16 @@ class Camp_setup:
             with transaction.atomic():
                 if self.serializerContactos.is_valid():
                     self.camp.tasksIds = []
-                    self.camp.save()
+                    campania = self.camp.save()
                     if self.camp.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
                         objs = [contactosxcampa(
-                            campania = self.camp.id,
+                            campania = campania.id,
                             contacto =c,nombreContactos=self.datacamp['nombreContactos'])
                             for c in contactos
                         ]
                         contactosxcampa.objects.bulk_create(objs)
+                    print(self.camp.id)
                     return self.camp.id
         except Exception as e:
             print("Exception enconuntered")
