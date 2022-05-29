@@ -190,10 +190,10 @@ def check_camp_ini():
 @shared_task(name="check_camp_fini")
 def check_camp_fini():
     print("--Chequeando campañas que terminan--")
-    campanias = Campania.objects.filter(estado = estado_campania.objects.get(descripcion=1))
+    campaniasList = Campania.objects.filter(estado = estado_campania.objects.get(descripcion=1))
     fechaActual = date.today()
-    for c in campanias:
-        if c.fechaFin == fechaActual:
+    for campania in campaniasList:
+        if campania.fechaFin == fechaActual or campania.fechaFin < fechaActual:
             disableTaskxCamp(c.id)
     print("--Chequeando campañas que terminan--")
 
