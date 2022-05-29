@@ -153,14 +153,13 @@ def crearTaskxmedioxcamp(campID):
 
 def disableTaskxCamp(campID):
     camp = Campania.objects.get(pk = campID)
-    
     for t in camp.tasksIds:
         idt = t
         if type(t) == list:
             idt = t[0]
         periodic_task = PeriodicTask.objects.get(pk = idt)
         periodic_task.enabled = False
-        periodic_task.save()
+        periodic_task.delete()
     inactiva = estado_campania.objects.get(descripcion=3)
     camp.estado = inactiva
     camp.save()      
@@ -181,7 +180,6 @@ def customSchedule(h,m):
 def check_camp_ini():
     print("--Chequeando campañas que inician--")
     campanias = Campania.objects.filter(estado = estado_campania.objects.get(descripcion=2))
-    fechaActual = date.today()
     for c in campanias:
         if camp_activa(c.id) and len(c.tasksIds) == 0:
             crearTaskxmedioxcamp(c.id)
@@ -192,6 +190,7 @@ def check_camp_fini():
     print("--Chequeando campañas que terminan--")
     campaniasList = Campania.objects.filter(estado = estado_campania.objects.get(descripcion=1))
     fechaActual = date.today()
+    print(campaniasList)
     for campania in campaniasList:
         if campania.fechaFin == fechaActual or campania.fechaFin < fechaActual:
             disableTaskxCamp(campania.id)
