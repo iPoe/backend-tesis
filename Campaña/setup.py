@@ -41,6 +41,7 @@ class Camp_setup:
                             for c in contactos
                         ]
                         contactosxcampa.objects.bulk_create(objs)
+                    print("ID DE LA CAMPANIA: ")
                     print(self.camp.id)
                     return self.camp.id
         except Exception as e:
