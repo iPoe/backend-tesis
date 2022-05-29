@@ -153,12 +153,15 @@ def crearTaskxmedioxcamp(campID):
 
 def disableTaskxCamp(campID):
     camp = Campania.objects.get(pk = campID)
+    print("Deshabilitanto la campaña")
+    print(campID)
     for t in camp.tasksIds:
         idt = t
         if type(t) == list:
             idt = t[0]
         periodic_task = PeriodicTask.objects.get(pk = idt)
         periodic_task.enabled = False
+        periodic_task.save()
         periodic_task.delete()
     inactiva = estado_campania.objects.get(descripcion=3)
     camp.estado = inactiva
@@ -190,6 +193,7 @@ def check_camp_fini():
     print("--Chequeando campañas que terminan--")
     campaniasList = Campania.objects.filter(estado = estado_campania.objects.get(descripcion=1))
     fechaActual = date.today()
+    print("Lista de campañas a deshabilitar")
     print(campaniasList)
     for campania in campaniasList:
         if campania.fechaFin == fechaActual or campania.fechaFin < fechaActual:
