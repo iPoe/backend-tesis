@@ -194,7 +194,7 @@ def check_camp_fini():
     fechaActual = date.today()
     for campania in campaniasList:
         if campania.fechaFin == fechaActual or campania.fechaFin < fechaActual:
-            disableTaskxCamp(c.id)
+            disableTaskxCamp(campania.id)
     print("--Chequeando campañas que terminan--")
 
 @shared_task(name="enviar_sms")
