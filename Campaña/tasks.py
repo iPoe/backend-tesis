@@ -73,7 +73,7 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     else:
         pass
 
-    cam.tasksIds += idTask
+    cam.tasksIds = cam.tasksIds + idTask
     cam.save()
     
 def llamar_usuarias(ID,mId,tel=''):
