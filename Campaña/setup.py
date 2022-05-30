@@ -39,7 +39,7 @@ class Camp_setup:
                     self.camp.tasksIds = []
                     campania = self.camp.save()
                     print(Campania.objects)
-                    if self.campania.estado.descripcion == 1:
+                    if campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
                         objs = [contactosxcampa(
                             campania = campania.id,
