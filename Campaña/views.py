@@ -197,7 +197,11 @@ def campania_view(request):
 				if CampaniaConf.camp.is_valid():
 					campaniaId = CampaniaConf.guardarContactos()
 					CampaniaConf.guardarMedios(campaniaId,mediosdata)
-					if Campania.objects.get(pk = campaniaId).estado.descripcion == 1:
+					print("Campaña creada")
+					print(Campania.objects.get(pk = campaniaId))
+					print("Fin campaña creada")
+					nuevaCampania = Campania.objects.get(pk = campaniaId)
+					if nuevaCampania.estado.descripcion == 1:
 						crearTaskxmedioxcamp(campaniaId)
 					return JsonResponse(CampaniaConf.camp.data,status=201,safe=False)
 		except Exception as e:
