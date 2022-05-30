@@ -194,13 +194,11 @@ def campania_view(request):
 			with transaction.atomic():
 				mediosdata = request.data['medios']
 				CampaniaConf = Camp_setup(request.data)
-				print("Estado en view de la camp: ")
-				print(CampaniaConf.camp.is_valid())
 				if CampaniaConf.camp.is_valid():
-					a = CampaniaConf.guardarContactos()
-					r = CampaniaConf.guardarMedios(a,mediosdata)
-					if CampaniaConf.camp.estado.descripcion == 1:
-						crearTaskxmedioxcamp(a)
+					campaniaId = CampaniaConf.guardarContactos()
+					CampaniaConf.guardarMedios(campaniaId,mediosdata)
+					if Campania.objects.get(pk = campaniaId).estado.descripcion == 1:
+						crearTaskxmedioxcamp(campaniaId)
 					return JsonResponse(CampaniaConf.camp.data,status=201,safe=False)
 		except Exception as e:
 			print(e)
