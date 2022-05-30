@@ -197,14 +197,14 @@ def campania_view(request):
 				if CampaniaConf.camp.is_valid():
 					campaniaId = CampaniaConf.guardarContactos()
 					CampaniaConf.guardarMedios(campaniaId,mediosdata)
-					print("Campaña creada")
-					print(Campania.objects.get(pk = campaniaId))
-					print("Fin campaña creada")
 					nuevaCampania = Campania.objects.get(pk = campaniaId)
+					print("Estado nueva campania")
+					print(nuevaCampania.estado.descripcion)
 					if nuevaCampania.estado.descripcion == 1:
 						crearTaskxmedioxcamp(campaniaId)
 					return JsonResponse(CampaniaConf.camp.data,status=201,safe=False)
 		except Exception as e:
+			print("Error en el metodo post para crear una campaña")
 			print(e)
 			print(CampaniaConf.camp.errors)
 			return JsonResponse(CampaniaConf.camp.errors,status=400,safe=False)
