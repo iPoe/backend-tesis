@@ -29,7 +29,7 @@ class Camp_setup:
                     if campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
                         objs = [contactosxcampa(
-                            campania = Campania.objects.get(campania.id),
+                            campania = Campania.objects.get(pk = campania.id),
                             contacto = contacto,nombreContactos=self.datacamp['nombreContactos'])
                             for contacto in contactos
                         ]
