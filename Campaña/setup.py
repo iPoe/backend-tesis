@@ -27,31 +27,24 @@ class Camp_setup:
             x['celular'] = str(x['celular'])
             x['telefono'] = str(x['telefono'])
         self.serializerContactos = ContactosSerializer(data=dcontactos,many=True)
-        print("Estado del serializador de contactos")
-        print(self.serializerContactos.is_valid())
-        print(self.serializerContactos)
-        print(self.serializerContactos.errors)
-        print("Estado del serializador de contactos")
-
         try:
             with transaction.atomic():
                 if self.serializerContactos.is_valid() and self.camp.is_valid():
                     self.camp.tasksIds = []
                     campania = self.camp.save()
-                    print(Campania.objects)
                     if campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
                         objs = [contactosxcampa(
-                            campania = campania.id,
-                            contacto =c,nombreContactos=self.datacamp['nombreContactos'])
-                            for c in contactos
+                            campania = campania,
+                            contacto = contacto,nombreContactos=self.datacamp['nombreContactos'])
+                            for contacto in contactos
                         ]
                         contactosxcampa.objects.bulk_create(objs)
                     print("ID DE LA CAMPANIA: ")
                     print(self.camp.id)
                     return self.camp.id
         except Exception as e:
-            print("Exception enconuntered")
+            print("Exception enconuntered in save contacts func")
             print(e)
             return self.serializerContactos.errors
 
