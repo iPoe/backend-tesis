@@ -29,6 +29,8 @@ class Camp_setup:
         self.serializerContactos = ContactosSerializer(data=dcontactos,many=True)
         print("Estado del serializador de contactos")
         print(self.serializerContactos.is_valid())
+        print(self.serializerContactos)
+        print(self.serializerContactos.errors)
         print("Estado del serializador de contactos")
 
         try:
