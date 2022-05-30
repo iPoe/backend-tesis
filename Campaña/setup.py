@@ -16,12 +16,6 @@ class Camp_setup:
         self.mediosSerial = MediaSerializer
 
     def guardarContactos(self):
-        print("DATA DE LA CAMPANIA")
-        print("La data de la campania es: \n")
-        print(self.datacamp)
-        print("EL serializes dice:\n")
-        print(self.camp.is_valid())
-        print(self.camp)
         dcontactos = self.data_contactos
         for x in dcontactos:
             x['celular'] = str(x['celular'])
@@ -35,14 +29,14 @@ class Camp_setup:
                     if campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
                         objs = [contactosxcampa(
-                            campania = campania,
+                            campania = campania.id,
                             contacto = contacto,nombreContactos=self.datacamp['nombreContactos'])
                             for contacto in contactos
                         ]
                         contactosxcampa.objects.bulk_create(objs)
                     print("ID DE LA CAMPANIA: ")
-                    print(self.camp.id)
-                    return self.camp.id
+                    print(campania.id)
+                    return campania.id
         except Exception as e:
             print("Exception enconuntered in save contacts func")
             print(e)
