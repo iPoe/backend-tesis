@@ -1,7 +1,9 @@
+from ast import Try
 import datetime
 import pytz
 import json
 
+from django.db import transaction
 from celery import shared_task
 from datetime import date
 from .models import Campania,estado_campania,mediosxcampania,Medio,contactosxcampa,resultadosxcampania,Contacto
@@ -147,9 +149,14 @@ def auxIntensidadMedio(campId,intensidad,medioxc):
 
 
 def crearTaskxmedioxcamp(campID):
-    medsxcamp = mediosxcampania.objects.filter(campania_id=campID)
-    for m in medsxcamp:
-        auxIntensidadMedio(campID,m.intensidad,m)           
+    try:
+        with transaction.atomic():
+            medsxcamp = mediosxcampania.objects.filter(campania_id=campID)
+            for m in medsxcamp:
+                auxIntensidadMedio(campID,m.intensidad,m)
+    except Exception as e:
+        print("Error en el metodo de crear las tareas de una campaña")
+        print(e)
 
 def disableTaskxCamp(campID):
     camp = Campania.objects.get(pk = campID)
