@@ -77,11 +77,15 @@ class MediaSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Medio
 		fields = ['sms','tipoMedio','llamada_aud','intensidad','Horas','campID','email_asunt','email_cuerpo']
+		extra_kwargs = {
+            'email_asunt': {
+                'validators': [],
+            },
+			'email_cuerpo': {
+                'validators': [],
+            }
+        }
 
-	def get_validation_exclusions(self):
-		exclusions = super(MediaSerializer, self).get_validation_exclusions()
-		return exclusions + ['email_asunt','email_cuerpo']
-		
 	def create(self,validated_data):
 		i = validated_data['tipo_medio']
 		idcam = validated_data['campID']

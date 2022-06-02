@@ -56,7 +56,6 @@ class Camp_setup:
                 self.mediosSerial = MediaSerializer(data=data_medios,many=True)
                 print("Info del medio serializer")
                 print(self.mediosSerial)
-                self.mediosSerial.get_validation_exclusions()
                 print(self.mediosSerial.is_valid())
                 print("Info del medio serializer")
                 if self.mediosSerial.is_valid():
