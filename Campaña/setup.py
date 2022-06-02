@@ -1,3 +1,4 @@
+from typing import List
 from Campaña.models import Campania,Medio,mediosxcampania,contactosxcampa
 from .serializers import CampañaSerializer,ContactosSerializer,contactosxcampSerializer,MediaSerializer
 from django.db import transaction
@@ -53,22 +54,29 @@ class Camp_setup:
                 print("Data recibida del medio")
                 print(data_medios)
                 print("Data recibida del medio")
-                self.mediosSerial = MediaSerializer(data=data_medios,many=True)
-                print("Info del medio serializer")
-                print(self.mediosSerial)
-                print(self.mediosSerial.is_valid())
-                print("Info del medio serializer")
-                if self.mediosSerial.is_valid():
-                    print("Entro al if para guardar el medio")
-                    print("data del serializer")
-                    print(self.mediosSerial.data)
-                    print("data del serializer")
-                    medios = self.mediosSerial.save()
-                    print(medios)
-                    print("Medios Creados!")
+                # self.mediosSerial = MediaSerializer(data=data_medios,many=True)
+                # print("Info del medio serializer")
+                # print(self.mediosSerial)
+                # print(self.mediosSerial.is_valid())
+                # print("Info del medio serializer")
+                # if self.mediosSerial.is_valid():
+                #     print("Entro al if para guardar el medio")
+                #     print("data del serializer")
+                #     print(self.mediosSerial.data)
+                #     print("data del serializer")
+                #     medios = self.mediosSerial.save()
+                #     print(medios)
+                #     print("Medios Creados!")
+                medios = crear_medio(data_medios)
+                print(medios)
         except Exception as e:
             print("exception Encountered in create media func")
             print(e)
-            # type, value, traceback = sys.exc_info()
-            # print('Error trace %s: %s' % (value, traceback))
             traceback.print_exc()
+
+def crear_medio(data_medios):
+    medios = List()
+    for medio in data_medios:
+        medio_serializado = MediaSerializer( data = medio )
+        if medio_serializado.is_valid():
+            medios.append(medio_serializado.save())

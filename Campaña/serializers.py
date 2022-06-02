@@ -89,10 +89,13 @@ class MediaSerializer(serializers.ModelSerializer):
         }
 
 	def create(self,validated_data):
+		print("Validated data dentro del create")
+		print(validated_data)
+		print("Validated data dentro del create")
+
 		i = validated_data['tipo_medio']
 		idcam = validated_data['campID']
 		if i == 3:
-			print(validated_data)
 			asunto = validated_data['email_asunt']
 			cuerpo = validated_data['email_cuerpo']
 			validated_data['email_asunt'] = removerTags(asunto)
