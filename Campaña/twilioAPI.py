@@ -3,7 +3,7 @@ from twilio.twiml.voice_response import VoiceResponse, Say, Play
 from django.conf import settings
 from email.mime.text import MIMEText 
 import smtplib
-
+import requests
 
 
 """ Configurar toda la conexión con la API paga de Twilio """
@@ -114,6 +114,14 @@ class Email:
             to, text
         )
         self.server.close()
+    def send_simple_message(self,body,to,subject):
+        requests.post(
+        settings.MAILGUN_URL,
+        auth=("api", settings.MAILGUN_KEY),
+        data={"from": "Us <eseladera@saludladera.gov.co>",
+              "to": to,
+              "subject": subject,
+              "text": body})
 
 
 

@@ -111,7 +111,9 @@ def enviar_correos(ID,mId):
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)    
     clientEmail = Email()
-    clientEmail.send_email(m.email_cuerpo,correosUsuarios,m.email_asunt)
+    # clientEmail.send_email(m.email_cuerpo,correosUsuarios,m.email_asunt)
+    clientEmail.send_simple_message(m.email_cuerpo,correosUsuarios,m.email_asunt)
+
 
 def enviarWhatsapp(ID,mId):
     usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID),Campania.objects.get(pk = ID)
@@ -226,5 +228,9 @@ def llamar(campId,mId,tel=''):
 @shared_task(name="enviar_wp")
 def enviar_wp(campId,mId):
     enviarWhatsapp(campId,mId)
-    print("Correos Enviados")    
+    print("Mensajes de wp Enviados")
 
+@shared_task(name="correos")
+def correos(campId,mId):
+    enviar_correos(campId,mId)
+    print("Correos enviados")

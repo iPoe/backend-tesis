@@ -200,6 +200,8 @@ TNUMBER = os.environ["twilio_number"]
 #Mailgun settings and credentials
 EMAIL_USER = os.environ["email_user"]
 EMAIL_PASSWORD = os.environ["email_password"]
+MAILGUN_KEY = os.environ["mailgun_key"]
+MAILGUN_URL = os.environ["mailgun_url"]
 
 #Adding auto pk fields in the models
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
