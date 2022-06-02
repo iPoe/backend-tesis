@@ -60,3 +60,5 @@ class Camp_setup:
         except Exception as e:
             print("exception Encountered in create media func")
             print(e)
+            print("Errores del serializer")
+            print(self.mediosSerial.errors)
