@@ -40,10 +40,8 @@ class CampañaSerializer(serializers.ModelSerializer):
 		f_ini,f_actual = validated_data['fechaInicio'],date.today()
 		if f_actual == f_ini:
 			validated_data['estado'] = estado_campania.objects.get(descripcion = 1)
-			#Llamar tarea con el id de la campaña
 		else:
 			validated_data['estado'] = estado_campania.objects.get(descripcion = 2)
-
 		return Campania.objects.create(**validated_data)
 
 

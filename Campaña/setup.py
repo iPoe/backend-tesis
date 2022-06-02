@@ -24,7 +24,6 @@ class Camp_setup:
         try:
             with transaction.atomic():
                 if self.serializerContactos.is_valid() and self.camp.is_valid():
-                    self.camp.tasksIds = []
                     campania = self.camp.save()
                     if campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
