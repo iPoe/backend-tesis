@@ -66,8 +66,8 @@ class ContactosSerializer(serializers.ModelSerializer):
 
 class MediaSerializer(serializers.ModelSerializer):
 	llamada_aud = serializers.FileField(allow_empty_file=True,required=False)
-	email_asunt = serializers.CharField(allow_blank=True,required=False)
-	email_cuerpo = serializers.CharField(allow_blank=True,required=False)
+	# email_asunt = serializers.CharField(allow_blank=True,required=False)
+	# email_cuerpo = serializers.CharField(allow_blank=True,required=False)
 	sms = serializers.CharField(allow_blank=True,required=False,source='sms_mensaje')
 	tipoMedio = serializers.IntegerField(source='tipo_medio')
 	intensidad = serializers.IntegerField()
@@ -80,9 +80,11 @@ class MediaSerializer(serializers.ModelSerializer):
 		extra_kwargs = {
             'email_asunt': {
                 'validators': [],
+				'required': False
             },
 			'email_cuerpo': {
                 'validators': [],
+				'required': False
             }
         }
 
