@@ -1,4 +1,5 @@
 from ast import Try
+from curses.ascii import EM
 import datetime
 import pytz
 import json
@@ -112,7 +113,9 @@ def enviar_correos(ID,mId):
     usuariasCamp = contactosxcampa.objects.filter(campania = ID)
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)
-    send_simple_message(m.email_cuerpo,correosUsuarios,m.email_asunt)
+    email_handller = Email()
+    email_handller.send_email(m.email_cuerpo,correosUsuarios,m.email_asunt)
+    # send_simple_message(m.email_cuerpo,correosUsuarios,m.email_asunt)
 
 def send_simple_message(body,to,subject):
     requests.post(

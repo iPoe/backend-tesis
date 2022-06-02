@@ -16,7 +16,7 @@ def load_twilio_config():
 
 
 def load_email_config():
-    email_smtp_dir = 'smtp.gmail.com:587'
+    email_smtp_dir = settings.SMTP_HOSTNAME
     email_email = settings.EMAIL_USER
     email_password = settings.EMAIL_PASSWORD
     return email_email, email_password, email_smtp_dir
@@ -114,15 +114,6 @@ class Email:
             to, text
         )
         self.server.close()
-    def send_simple_message(self,body,to,subject):
-        requests.post(
-        settings.MAILGUN_URL,
-        auth=("api", settings.MAILGUN_KEY),
-        data={"from": "Us <eseladera@saludladera.gov.co>",
-              "to": to,
-              "subject": subject,
-              "text": body})
-
 
 
 def main():

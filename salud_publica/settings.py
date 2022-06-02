@@ -202,6 +202,7 @@ EMAIL_USER = os.environ["email_user"]
 EMAIL_PASSWORD = os.environ["email_password"]
 MAILGUN_KEY = os.environ["mailgun_key"]
 MAILGUN_URL = os.environ["mailgun_url"]
+SMTP_HOSTNAME = os.environ["smtp_hostname"]
 
 #Adding auto pk fields in the models
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
