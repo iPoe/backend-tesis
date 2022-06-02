@@ -81,6 +81,7 @@ class MediaSerializer(serializers.ModelSerializer):
 		i = validated_data['tipo_medio']
 		idcam = validated_data['campID']
 		if i == 3:
+			print(validated_data)
 			asunto = validated_data['email_asunt']
 			cuerpo = validated_data['email_cuerpo']
 			validated_data['email_asunt'] = removerTags(asunto)
