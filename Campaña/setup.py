@@ -1,7 +1,7 @@
 from Campaña.models import Campania,Medio,mediosxcampania,contactosxcampa
 from .serializers import CampañaSerializer,ContactosSerializer,contactosxcampSerializer,MediaSerializer
 from django.db import transaction
-
+import sys
 
 class Camp_setup:
 
@@ -59,12 +59,9 @@ class Camp_setup:
                 print("Info del medio serializer")
                 if self.mediosSerial.is_valid():
                     self.mediosSerial.save()
-                    return "Medios Creados!"
-                else:
-                    print(self.mediosSerial.errors)
-                    return self.mediosSerial.errors
+                    print("Medios Creados!")
         except Exception as e:
             print("exception Encountered in create media func")
             print(e)
-            print("Errores del serializer")
-            print(self.mediosSerial.errors)
+            type, value, traceback = sys.exc_info()
+            print('Error trace %s:' % (value.strerror))
