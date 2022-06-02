@@ -75,7 +75,7 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     else:
         pass
 
-    cam.tasksIds = cam.tasksIds + idTask
+    cam.tasksIds.append(idTask)
     cam.save()
     
 def llamar_usuarias(ID,mId,tel=''):
@@ -157,6 +157,7 @@ def crearTaskxmedioxcamp(campID):
     except Exception as e:
         print("Error en el metodo de crear las tareas de una campaña")
         print(e)
+        return e
 
 def disableTaskxCamp(campID):
     camp = Campania.objects.get(pk = campID)
