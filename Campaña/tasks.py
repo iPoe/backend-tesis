@@ -2,6 +2,8 @@ from ast import Try
 import datetime
 import pytz
 import json
+from django.conf import settings
+import requests
 
 from django.db import transaction
 from celery import shared_task
@@ -109,11 +111,17 @@ def envMensajeUsuarias(ID,mId):
 def enviar_correos(ID,mId):
     usuariasCamp = contactosxcampa.objects.filter(campania = ID)
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
-    m = Medio.objects.get(pk=mId)    
-    clientEmail = Email()
-    # clientEmail.send_email(m.email_cuerpo,correosUsuarios,m.email_asunt)
-    clientEmail.send_simple_message(m.email_cuerpo,correosUsuarios,m.email_asunt)
+    m = Medio.objects.get(pk=mId)
+    send_simple_message(m.email_cuerpo,correosUsuarios,m.email_asunt)
 
+def send_simple_message(body,to,subject):
+    requests.post(
+    settings.MAILGUN_URL,
+    auth=("api", settings.MAILGUN_KEY),
+    data={"from": "Us <eseladera@saludladera.gov.co>",
+            "to": to,
+            "subject": subject,
+            "text": body})
 
 def enviarWhatsapp(ID,mId):
     usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID),Campania.objects.get(pk = ID)
