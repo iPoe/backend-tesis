@@ -76,7 +76,8 @@ class MediaSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Medio
-		fields = ['sms','tipoMedio','llamada_aud','intensidad','Horas','campID','email_asunt','email_cuerpo']
+		fields = ['sms','tipoMedio','llamada_aud','intensidad','Horas','campID']
+		optional_fields = ['email_asunt','email_cuerpo']
 	def create(self,validated_data):
 		i = validated_data['tipo_medio']
 		idcam = validated_data['campID']
