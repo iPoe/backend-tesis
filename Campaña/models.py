@@ -31,7 +31,7 @@ class Campania(models.Model):
 	duracion = models.IntegerField()
 	operador_ID = models.ForeignKey(Operador,on_delete=models.PROTECT)
 	estado = models.ForeignKey(estado_campania,on_delete=models.PROTECT)
-	tasksIds = ArrayField(ArrayField(models.IntegerField()),null=True,blank=True,default=list())
+	tasksIds = ArrayField(ArrayField(models.IntegerField()),null=True,blank=True,default=list)
 	def __str__(self):
 		return self.nombre
 
