@@ -15,6 +15,8 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .utils import generate_access_token, generate_refresh_token
+import traceback
+
 
 #1cel,2tel,correo3,sms4,wp5
 from .models import (Campania,
@@ -198,14 +200,13 @@ def campania_view(request):
 					campaniaId = CampaniaConf.guardarContactos()
 					CampaniaConf.guardarMedios(campaniaId,mediosdata)
 					nuevaCampania = Campania.objects.get(pk = campaniaId)
-					print("Estado nueva campania")
-					print(nuevaCampania.estado.descripcion)
 					if nuevaCampania.estado.descripcion == 1:
 						crearTaskxmedioxcamp(campaniaId)
 					return JsonResponse(CampaniaConf.camp.data,status=201,safe=False)
 		except Exception as e:
 			print("Error en el metodo post para crear una campaña")
 			print(e)
+			traceback.print_exc()
 			print(CampaniaConf.camp.errors)
 			return JsonResponse(CampaniaConf.camp.errors,status=400,safe=False)
 

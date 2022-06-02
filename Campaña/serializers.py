@@ -89,10 +89,6 @@ class MediaSerializer(serializers.ModelSerializer):
         }
 
 	def create(self,validated_data):
-		print("Validated data dentro del create")
-		print(validated_data)
-		print("Validated data dentro del create")
-
 		i = validated_data['tipo_medio']
 		idcam = validated_data['campID']
 		if i == 3:

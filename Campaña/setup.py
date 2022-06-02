@@ -1,12 +1,10 @@
 from typing import List
-from Campaña.models import Campania,Medio,mediosxcampania,contactosxcampa
-from .serializers import CampañaSerializer,ContactosSerializer,contactosxcampSerializer,MediaSerializer
+from Campaña.models import Campania,contactosxcampa
+from .serializers import CampañaSerializer,ContactosSerializer,MediaSerializer
 from django.db import transaction
-import sys
 import traceback
 
 class Camp_setup:
-
     def __init__(self,data):
         self.data_contactos = data['contactos']
         self.data_medios = data['medios']
@@ -15,7 +13,6 @@ class Camp_setup:
         self.datacamp.pop('medios')
         self.camp = CampañaSerializer(data = self.datacamp)
         self.serializerContactos = ContactosSerializer
-        self.mediosSerial = MediaSerializer
 
     def guardarContactos(self):
         dcontactos = self.data_contactos
@@ -51,24 +48,7 @@ class Camp_setup:
                 idcam = Campania.objects.get(pk=ID).id
                 for m in data_medios:
                     m['campID']= idcam
-                print("Data recibida del medio")
-                print(data_medios)
-                print("Data recibida del medio")
-                # self.mediosSerial = MediaSerializer(data=data_medios,many=True)
-                # print("Info del medio serializer")
-                # print(self.mediosSerial)
-                # print(self.mediosSerial.is_valid())
-                # print("Info del medio serializer")
-                # if self.mediosSerial.is_valid():
-                #     print("Entro al if para guardar el medio")
-                #     print("data del serializer")
-                #     print(self.mediosSerial.data)
-                #     print("data del serializer")
-                #     medios = self.mediosSerial.save()
-                #     print(medios)
-                #     print("Medios Creados!")
-                medios = crear_medio(data_medios)
-                print(medios)
+                crear_medio(data_medios)
         except Exception as e:
             print("exception Encountered in create media func")
             print(e)
