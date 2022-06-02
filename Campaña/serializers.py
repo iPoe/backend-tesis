@@ -76,7 +76,7 @@ class MediaSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Medio
-		fields = ['sms','tipoMedio','llamada_aud','intensidad','Horas','campID','email_asunt','email_cuerpo']
+		fields = ['sms','tipoMedio','llamada_aud','intensidad','Horas','campID','email_asunt','email_cuerpo','correo']
 		extra_kwargs = {
             'email_asunt': {
                 'validators': [],

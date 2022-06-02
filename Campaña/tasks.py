@@ -4,7 +4,8 @@ import datetime
 import pytz
 import json
 from django.conf import settings
-import requests
+import smtplib
+from email.mime.text import MIMEText
 
 from django.db import transaction
 from celery import shared_task
@@ -113,18 +114,30 @@ def enviar_correos(ID,mId):
     usuariasCamp = contactosxcampa.objects.filter(campania = ID)
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)
-    email_handller = Email()
-    email_handller.send_email(m.email_cuerpo,correosUsuarios,m.email_asunt)
-    # send_simple_message(m.email_cuerpo,correosUsuarios,m.email_asunt)
+    send_mailgun_message(m.correo,correosUsuarios,m.email_asunt,m.email_cuerpo)
 
-def send_simple_message(body,to,subject):
-    requests.post(
-    settings.MAILGUN_URL,
-    auth=("api", settings.MAILGUN_KEY),
-    data={"from": "Us <eseladera@saludladera.gov.co>",
-            "to": to,
-            "subject": subject,
-            "text": body})
+def send_message_via_smtp(from_, to, mime_string):
+    ''' sends a mime message to mailgun SMTP gateway '''
+    smtp = smtplib.SMTP("smtp.mailgun.org", 587)
+    smtp.login(settings.EMAIL_USER, settings.EMAIL_PASSWORD)
+    smtp.sendmail(from_, to, mime_string)
+    smtp.quit()
+
+
+def send_mailgun_message(from_, to, subject, text, tag=None, track=True):
+    ''' compose and sends a text-only message through mailgun '''
+    msg = MIMEText(text, _charset='utf-8')
+
+    msg['Subject'] = subject
+    msg['From'] = from_
+    msg['To'] = ", ".join(to)
+    if tag:
+        # you can attach tags to your messages
+        msg['X-Mailgun-Tag'] = tag
+    if track:
+        # you can auto transform links to track clicks
+        msg['X-Mailgun-Track'] = "yes"
+    send_message_via_smtp(from_, to, msg.as_string())
 
 def enviarWhatsapp(ID,mId):
     usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID),Campania.objects.get(pk = ID)
