@@ -65,7 +65,7 @@ INSTALLED_APPS = [
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [
-    'https://contactall-343612.uc.r.appspot.com/'
+    'https://contactall-343612.uc.r.appspot.com'
 ]
 # REST_FRAMEWORK = {
 #     'DEFAULT_PERMISSION_CLASSES': (
