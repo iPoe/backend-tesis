@@ -43,25 +43,26 @@ class Camp_setup:
 
     
     def guardarMedios(self,ID,data):
-        dmedios = data
+        data_medios = data
         try:
             with transaction.atomic():
                 idcam = Campania.objects.get(pk=ID).id
-                for m in dmedios:
+                for m in data_medios:
                     m['campID']= idcam
                 print("Data recibida del medio")
-                print(dmedios)
+                print(data_medios)
                 print("Data recibida del medio")
-                self.mediosSerial = MediaSerializer(data=dmedios,many=True)
+                self.mediosSerial = MediaSerializer(data=data_medios,many=True)
                 print("Info del medio serializer")
                 print(self.mediosSerial)
                 print(self.mediosSerial.is_valid())
                 print("Info del medio serializer")
                 if self.mediosSerial.is_valid():
-                    self.mediosSerial.save()
+                    medios = self.mediosSerial.save()
+                    print(medios)
                     print("Medios Creados!")
         except Exception as e:
             print("exception Encountered in create media func")
             print(e)
             type, value, traceback = sys.exc_info()
-            print('Error trace %s:' % (value.strerror))
+            print('Error trace %s: %s' % (value, traceback))
