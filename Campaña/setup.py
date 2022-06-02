@@ -75,7 +75,7 @@ class Camp_setup:
             traceback.print_exc()
 
 def crear_medio(data_medios):
-    medios = List()
+    medios = []
     for medio in data_medios:
         medio_serializado = MediaSerializer( data = medio )
         if medio_serializado.is_valid():
