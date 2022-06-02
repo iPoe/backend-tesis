@@ -49,8 +49,14 @@ class Camp_setup:
                 idcam = Campania.objects.get(pk=ID).id
                 for m in dmedios:
                     m['campID']= idcam
-                #print(dmedios)
+                print("Data recibida del medio")
+                print(dmedios)
+                print("Data recibida del medio")
                 self.mediosSerial = MediaSerializer(data=dmedios,many=True)
+                print("Info del medio serializer")
+                print(self.mediosSerial)
+                print(self.mediosSerial.is_valid())
+                print("Info del medio serializer")
                 if self.mediosSerial.is_valid():
                     self.mediosSerial.save()
                     return "Medios Creados!"
