@@ -230,7 +230,7 @@ def check_camp_fini():
     print("Lista de campañas a deshabilitar")
     print(campaniasList)
     for campania in campaniasList:
-        if campania.fechaFin == fechaActual or campania.fechaFin < fechaActual:
+        if campania.fechaFin < fechaActual:
             disableTaskxCamp(campania.id)
     print("--Chequeando campañas que terminan--")
 
