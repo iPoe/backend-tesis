@@ -72,17 +72,18 @@ class WhatsApp:
     def send_message(self, body, to,idWhatsapp=""):
         if len(idWhatsapp):
             message_whatsapp = self.twilio_client.messages.create(
-            body=body,
-            to='whatsapp:'+to,
-            from_='whatsapp:'+self.twilio_number_whatsapp,
-        )
+                body=body,
+                status_callback = 'https://coffee-cuscus-4020.twil.io/status-callback-wp?idLlamada='+idWhatsapp,
+                to='whatsapp:'+to,
+                from_='whatsapp:'+self.twilio_number_whatsapp,
+            )
+        else:
+            message_whatsapp = self.twilio_client.messages.create(
+                body=body,
+                to='whatsapp:'+to,
+                from_='whatsapp:'+self.twilio_number_whatsapp,
+            )
 
-        message_whatsapp = self.twilio_client.messages.create(
-            body=body,
-            status_callback = 'https://coffee-cuscus-4020.twil.io/status-callback-wp?idLlamada='+idWhatsapp,
-            to='whatsapp:'+to,
-            from_='whatsapp:'+self.twilio_number_whatsapp,
-        )
         print(message_whatsapp.sid)
 
     def send_media(self, body, to, image):
