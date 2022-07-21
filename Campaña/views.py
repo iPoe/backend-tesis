@@ -383,13 +383,13 @@ def reply_whatsapp(request):
 						if medio.tipo_medio.descripcion == 5:
 							tipoRes = Tipo_resultado.objects.get( descripcion = "r" )
 							res = resultadosxcampania.objects.update_or_create(
-								contacto_cc=usuaria.identidad,
+								contacto_cc = usuaria.identidad,
 							 	campania_id = c.id, medio_id= medio.id, 
-								defaults=	{'Tipo_resultado' : tipoRes} 
+								defaults =	{'Tipo_resultado' : tipoRes} 
 							)
 							clientWhatsapp.send_message( medio.sms_mensaje , request.data['WaId'])
 							return JsonResponse("Respuesta de whatsapp enviada",status=201,safe=False)
-
 		except Exception as e:
 			print(e)
+			traceback.print_exc()
 			return JsonResponse("Error al responder al wp",status=400,safe=False)
