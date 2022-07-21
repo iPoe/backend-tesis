@@ -10,7 +10,8 @@ from email.mime.text import MIMEText
 from django.db import transaction
 from celery import shared_task
 from datetime import date
-from .models import Campania,estado_campania,mediosxcampania,Medio,contactosxcampa,resultadosxcampania,Contacto
+from .models import Campania,estado_campania,mediosxcampania,Medio,contactosxcampa,resultadosxcampania,	Tipo_resultado
+
 from django_celery_beat.models import IntervalSchedule, PeriodicTask,CrontabSchedule
 from .twilioAPI import VoiceCall,SMS,Email,WhatsApp
 
@@ -114,6 +115,11 @@ def enviar_correos(ID,mId):
     usuariasCamp = contactosxcampa.objects.filter(campania = ID)
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)
+    camp = Campania.objects.get(pk = ID)
+    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
+    tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
+    for usuario in usuarios_campaña:
+        res = resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
     send_mailgun_message(m.correo,correosUsuarios,m.email_asunt,m.email_cuerpo)
 
 def send_message_via_smtp(from_, to, mime_string):
