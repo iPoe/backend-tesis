@@ -332,7 +332,13 @@ def test_estadisticas(request):
 							listausers.append(dicfinal)
 							dicresxmed,i = {},1
 						strMedio = "medio_{}".format(i)
-						dicresxmed[strMedio] = "Si" if res['Tipo_resultado'] == 1 else "No"
+						if res['Tipo_resultado'] == 1:
+							dicresxmed[strMedio] = "Si"
+						elif res['Tipo_resultado'] == 3:
+							dicresxmed[strMedio] = "R"
+						else:
+							dicresxmed[strMedio] = "No"
+						# dicresxmed[strMedio] = "Si" if res['Tipo_resultado'] == 1 else "No"
 						contacantiguo = res['contacto_cc']
 						i+=1
 
