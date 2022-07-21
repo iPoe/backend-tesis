@@ -70,7 +70,7 @@ class WhatsApp:
         self.twilio_client = Client(twilio_account_sid, twilio_auth_token)
 
     def send_message(self, body, to,idWhatsapp=""):
-        if len(idWhatsapp) == 0:
+        if len(idWhatsapp):
             message_whatsapp = self.twilio_client.messages.create(
             body=body,
             to='whatsapp:'+to,

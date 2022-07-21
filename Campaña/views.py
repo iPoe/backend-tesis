@@ -372,12 +372,14 @@ def reply_whatsapp(request):
 			usuaria = Contacto.objects.filter(celular=request.data['WaId'][2:]).first()
 			campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
 			estado_activo = estado_campania.objects.get(descripcion=1)
-			campañas_activas = [ camp for camp in campañas_usuaria if camp.campania.estado == estado_activo]
+			campañas_activas = [ camp.campania for camp in campañas_usuaria if camp.campania.estado == estado_activo]
 			print("Las campañas activas para esta usuaria son")
 			print(campañas_activas)
 			if len(campañas_activas):
 				for c in campañas_activas:
 					medsxcamp = mediosxcampania.objects.filter(campania_id=c.id)
+					print("medios de la campaña:")
+					print(medsxcamp)
 					for m in medsxcamp:
 						medio = Medio.objects.get(pk = m.medio_id.id)
 						if medio.tipo_medio.descripcion == 5:
