@@ -373,26 +373,10 @@ def reply_whatsapp(request):
 			campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
 			estado_activo = estado_campania.objects.get(descripcion=1)
 			campañas_activas = [ camp.campania for camp in campañas_usuaria if camp.campania.estado == estado_activo]
-			print("Las campañas activas para esta usuaria son")
 			print(campañas_activas)
 			if len(campañas_activas):
 				for campania in campañas_activas:
 					aux_reply(campania,usuaria)
-				# medsxcamp = mediosxcampania.objects.filter(campania_id__in = [campania.id for campania in campañas_activas] )
-				# print("medios de la campaña:")
-				# print(medsxcamp)
-				# medios = [ Medio.objects.get(pk = m.medio_id.id) for m in medsxcamp]
-				# print("Medios con desc igual a wp")
-				# wp_medios = [ medio for medio in medios if medio.tipo_medio.descripcion == 5 ]
-				# tipoRes = Tipo_resultado.objects.get( descripcion = "r" )
-				# print(wp_medios)
-				# for medio in wp_medios:
-				# 	print("mensaje enviado")
-				# 	res = resultadosxcampania.objects.update_or_create(
-				# 		medio_id = medio.id,
-				# 		defaults =	{'Tipo_resultado' : tipoRes}
-				# 	)
-				# 	clientWhatsapp.send_message( medio.sms_mensaje , request.data['WaId'])
 				return JsonResponse("Respuesta de whatsapp enviada",status=201,safe=False)
 		except Exception as e:
 			print(e)
@@ -408,7 +392,8 @@ def aux_reply(campania, usuaria):
 	for medio in wp_medios:
 		res = resultadosxcampania.objects.update_or_create(
 			contacto_cc=usuaria.identidad,
-			campania_id = campania.id, medio_id= medio.id, 
+			campania_id = campania.id, 
+			medio_id= medio.id, 
 			defaults=	{'Tipo_resultado' : tipoRes} 
 		)
 		clientWhatsapp.send_message( medio.sms_mensaje ,"57"+usuaria.celular)
