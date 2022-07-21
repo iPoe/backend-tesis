@@ -381,12 +381,11 @@ def reply_whatsapp(request):
 					for m in medsxcamp:
 						medio = Medio.objects.get(pk = m.medio_id.id)
 						if medio.tipo_medio.descripcion == 5:
-							clientWhatsapp.send_message( medio.sms_mensaje ,
-							request.data['WaId'],'Reply de wp')
-							tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
+							tipoRes = Tipo_resultado.objects.get( descripcion = "r" )
 							res = resultadosxcampania.objects.update_or_create( contacto_cc=usuaria.identidad,
 							 campania_id = c.id, medio_id= medio.id, defaults=	{'Tipo_resultado' : tipoRes} )
-							res.save()
+							clientWhatsapp.send_message( medio.sms_mensaje ,
+							request.data['WaId'])
 							return JsonResponse("Respuesta de whatsapp enviada",status=201,safe=False)
 
 		except Exception as e:
