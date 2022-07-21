@@ -379,14 +379,17 @@ def reply_whatsapp(request):
 				medsxcamp = mediosxcampania.objects.filter(campania_id__in = [campania.id for campania in campañas_activas] )
 				print("medios de la campaña:")
 				print(medsxcamp)
+				medios = [ Medio.objects.get(pk = m.medio_id.id) for m in medsxcamp]
+				print("Medios con desc igual a wp")
+				wp_medios = [ medio for medio in medios if medio.tipo_medio.descripcion == 5 ]
+				print(wp_medios)
 				for m in medsxcamp:
 					medio = Medio.objects.get(pk = m.medio_id.id)
 					if medio.tipo_medio.descripcion == 5:
 						tipoRes = Tipo_resultado.objects.get( descripcion = "r" )
 						res = resultadosxcampania.objects.update_or_create(
-							contacto_cc = usuaria.identidad,
-							campania_id = c.id, medio_id= medio.id, 
-							defaults =	{'Tipo_resultado' : tipoRes} 
+							medio_id = medio.id,
+							defaults =	{'Tipo_resultado' : tipoRes}
 						)
 						clientWhatsapp.send_message( medio.sms_mensaje , request.data['WaId'])
 						return JsonResponse("Respuesta de whatsapp enviada",status=201,safe=False)
