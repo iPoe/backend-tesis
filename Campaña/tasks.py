@@ -120,6 +120,7 @@ def enviar_correos(ID,mId):
     tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
     for usuario in usuarios_campaña:
         res = resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
+        res.save()
     send_mailgun_message(m.correo,correosUsuarios,m.email_asunt,m.email_cuerpo)
 
 def send_message_via_smtp(from_, to, mime_string):
