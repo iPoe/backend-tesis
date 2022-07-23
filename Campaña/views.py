@@ -40,7 +40,10 @@ from .tasks import crearTareaCampaña
 from Campaña.tasks import crearTaskxmedioxcamp,disableTaskxCamp
 from .setup import Camp_setup
 from twilio.twiml.messaging_response import MessagingResponse
-from .twilioAPI import WhatsApp
+from .twilioAPI import (
+	RestAccount,
+	WhatsApp
+)
 
 
 clientWhatsapp = WhatsApp()
@@ -92,7 +95,8 @@ def recuento_camp(request):
 			'finalizadas':0,
 			'programadas':0,
 			'activas':0,
-			'total': Campania.objects.count()
+			'total': Campania.objects.count(),
+			'balance': RestAccount.get_account_balance()
 		}
 		query = Campania.objects.all().values('estado').annotate(total=Count('estado')).order_by('total')
 		for e in query:
