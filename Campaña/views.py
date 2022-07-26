@@ -47,7 +47,7 @@ from .twilioAPI import (
 
 
 clientWhatsapp = WhatsApp()
-
+clientAccount = RestAccount()
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @ensure_csrf_cookie
@@ -96,7 +96,7 @@ def recuento_camp(request):
 			'programadas':0,
 			'activas':0,
 			'total': Campania.objects.count(),
-			'balance': RestAccount.get_account_balance()
+			'balance': clientAccount.get_account_balance()
 		}
 		query = Campania.objects.all().values('estado').annotate(total=Count('estado')).order_by('total')
 		for e in query:
