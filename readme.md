@@ -2,12 +2,6 @@
 
 Este repositorio contiene la API usada en la aplicacion de salud-publica
 
-### To-do
-- Agregar la funcionalidad de subir audio de llamada
-- Agregar funcionalidad de envio de correo masivo
-- Cambiar el front para que envie el asunto y dirección de correo
-- Agregar manual para hacer deploy en Heroku
-- Definir si usar django-test o pruebas automaticas con selenium
 
 #### Despliegue en Heroku
 Primero guarda tus cambios:\
