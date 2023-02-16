@@ -63,11 +63,10 @@ def login_view(request):
 		raise exceptions.AuthenticationFailed('user not found')
 	if(not operador.clave == password):
 		raise exceptions.AuthenticationFailed('wrong password')
-	# serialized_user = UsuarioSerializer(operador)
 	access_token = generate_access_token(operador)
 	refresh_token = generate_refresh_token(operador)
 
-	response .set_cookie(key='refreshtoken', value= refresh_token)
+	response.set_cookie(key='refreshtoken', value= refresh_token)
 	response.data = {
 		'acces_token' : access_token,
 		'usuario' : operador.id,
@@ -407,3 +406,5 @@ def aux_reply(campania, usuaria):
 			defaults=	{'Tipo_resultado' : tipoRes} 
 		)
 		clientWhatsapp.send_message( medio.sms_mensaje ,"57"+usuaria.celular)
+
+
