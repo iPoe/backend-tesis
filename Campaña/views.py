@@ -385,7 +385,7 @@ def reply_whatsapp(request):
 			print(campañas_activas)
 			if len(campañas_activas):
 				for campania in campañas_activas:
-					aux_reply(campania,usuaria)
+					aux_reply2(campania,usuaria, request)
 				return JsonResponse("Respuesta de whatsapp enviada",status=201,safe=False)
 		except Exception as e:
 			print(e)
@@ -408,3 +408,19 @@ def aux_reply(campania, usuaria):
 		clientWhatsapp.send_message( medio.sms_mensaje ,"57"+usuaria.celular)
 
 
+def respond(message):
+    response = MessagingResponse()
+    response.message(message)
+    return str(response)
+
+def aux_reply2(campania, usuaria, request):
+	campaign_mediums = mediosxcampania.objects.filter(campania_id = campania.id)
+	mediums = [ Medio.objects.get(pk = m.medio_id.id) for m in campaign_mediums]
+	whatsappMedium = [ medio for medio in mediums if medio.tipo_medio.descripcion == 5 ]
+	tipoRes = Tipo_resultado.objects.get( descripcion = "r" )
+
+	message = request.POST["Body"]
+	if message == '1':
+		return respond('Gracias por querer participar')
+	if message == '2':
+		return respond('Entendemos que no quieras participar')

@@ -63,6 +63,7 @@ class Medio(models.Model):
 	correo = models.CharField(max_length=30,null=True,blank=True)
 	email_cuerpo = models.CharField(max_length=500,null=True,blank=True)
 	sms_mensaje = models.CharField(max_length=500,null=True,blank=True)
+	#Check if you are using this field in the logic of the API
 	llamada_aud = models.FileField(upload_to='audios/',null=True,blank=True)
 	tipo_medio = models.ForeignKey(Tipo_medio,on_delete=models.PROTECT)
 	def __str__(self):
@@ -88,6 +89,6 @@ class mediosxcampania(models.Model):
 	hora3 = models.TimeField(null=True,blank=True)
 
 
-class resultadosxmedio(models.Model):
-	tipo_resultado = models.ForeignKey(Tipo_resultado,on_delete=models.PROTECT)
-	TipoMedio = models.ForeignKey(Tipo_medio,on_delete=models.PROTECT)
+# class resultadosxmedio(models.Model):
+# 	tipo_resultado = models.ForeignKey(Tipo_resultado,on_delete=models.PROTECT)
+# 	TipoMedio = models.ForeignKey(Tipo_medio,on_delete=models.PROTECT)
