@@ -387,13 +387,11 @@ def reply_whatsapp(request):
 				message = request.POST["Body"]
 				if message == '1':
 					msg = 'Gracias por querer participar'
-					clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
 				if message == '2':
 					msg = 'Entendemos que no quieras participar'
-					clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
 				else:
-					msg = "Para recibir más información, se puede comunicar con la Red de Salud ladera al teléfono 8937711 Ext 0\n ¡Gracias por responder!\nGracias por responder y por su interés, para mayor información, comuníquese con la E.S.E. Ladera al teléfono 8937711 Ext 0."
-					clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
+					msg = "¡Gracias por responder!\nGracias por responder y por su interés, para mayor información, comuníquese con la E.S.E. Ladera al teléfono 8937711 Ext 0."
+				clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
 			return JsonResponse("Reply completed",status=201,safe=False)
 		except Exception as e:
 			print(e)
