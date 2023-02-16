@@ -387,7 +387,7 @@ def reply_whatsapp(request):
 				message = request.POST["Body"]
 				if message == '1':
 					msg = 'Gracias por querer participar'
-				if message == '2':
+				elif message == '2':
 					msg = 'Entendemos que no quieras participar'
 				else:
 					msg = "¡Gracias por responder!\nGracias por responder y por su interés, para mayor información, comuníquese con la E.S.E. Ladera al teléfono 8937711 Ext 0."
