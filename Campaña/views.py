@@ -383,25 +383,22 @@ def reply_whatsapp(request):
 			estado_activo = estado_campania.objects.get(descripcion=1)
 			campañas_activas = [ camp.campania for camp in campañas_usuaria if camp.campania.estado == estado_activo]
 			print(campañas_activas)
-			if len(campañas_activas):
-				for campania in campañas_activas:
-					# aux_reply2(campania,usuaria, request)
-					message = request.POST["Body"]
-					if message == '1':
-						msg = respond('Gracias por querer participar')
-						clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
-
-					if message == '2':
-						msg = respond('Entendemos que no quieras participar')
-						clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
-					else:
-						msg = respond("Para recibir más información, se puede comunicar con la Red de Salud ladera al teléfono 8937711 Ext 0\n ¡Gracias por responder!\nGracias por responder y por su interés, para mayor información, comuníquese con la E.S.E. Ladera al teléfono 8937711 Ext 0.")
-						clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
-				return HttpResponse("Message sended okay.", content_type="text/plain")
+			if len(campañas_activas) > 0:
+				message = request.POST["Body"]
+				if message == '1':
+					msg = respond('Gracias por querer participar')
+					clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
+				if message == '2':
+					msg = respond('Entendemos que no quieras participar')
+					clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
+				else:
+					msg = respond("Para recibir más información, se puede comunicar con la Red de Salud ladera al teléfono 8937711 Ext 0\n ¡Gracias por responder!\nGracias por responder y por su interés, para mayor información, comuníquese con la E.S.E. Ladera al teléfono 8937711 Ext 0.")
+					clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
+			return JsonResponse("Reply completed",status=201,safe=False)
 		except Exception as e:
 			print(e)
 			traceback.print_exc()
-			return HttpResponse("Error when trying to send msg.", content_type="text/plain")
+			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
 
 def aux_reply(campania, usuaria):
 	medsxcamp = mediosxcampania.objects.filter(campania_id = campania.id)
