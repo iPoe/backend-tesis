@@ -387,10 +387,14 @@ def reply_whatsapp(request):
 				message = request.POST["Body"]
 				if message == '1':
 					msg = 'Gracias por querer participar'
+					resultado = '1'
 				elif message == '2':
 					msg = 'Entendemos que no quieras participar'
+					resultado = '2'
 				else:
 					msg = "¡Gracias por responder!\nGracias por responder y por su interés, para mayor información, comuníquese con la E.S.E. Ladera al teléfono 8937711 Ext 0."
+					resultado = '3'
+				cambiar_estado(campañas_activas, usuaria, resultado)
 				clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
 			return JsonResponse("Reply completed",status=201,safe=False)
 		except Exception as e:
@@ -398,35 +402,16 @@ def reply_whatsapp(request):
 			traceback.print_exc()
 			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
 
-def aux_reply(campania, usuaria):
-	medsxcamp = mediosxcampania.objects.filter(campania_id = campania.id)
-	medios = [ Medio.objects.get(pk = m.medio_id.id) for m in medsxcamp]
-	wp_medios = [ medio for medio in medios if medio.tipo_medio.descripcion == 5 ]
-	tipoRes = Tipo_resultado.objects.get( descripcion = "r" )
+def cambiar_estado(campanias, usuaria, resultado):
 
-	for medio in wp_medios:
-		res = resultadosxcampania.objects.update_or_create(
-			contacto_cc=usuaria.identidad,
-			campania_id = campania.id, 
-			medio_id= medio.id, 
-			defaults=	{'Tipo_resultado' : tipoRes} 
+	for campania in campanias:
+		medios_campaña = mediosxcampania.objects.filter(campania_id = campania.id)
+		lista_medios = [ Medio.objects.get(pk = m.medio_id.id) for m in medios_campaña]
+		medio_whatsapp = [ medio for medio in lista_medios if medio.tipo_medio.descripcion == 5 ]
+		nuevo_resultado = Tipo_resultado.objects.get( descripcion = resultado )
+
+		medio = medio_whatsapp[0]
+		result, created = resultadosxcampania.objects.update_or_create(
+			contacto_cc= usuaria.identidad, campania_id= campania.id,
+			medio_id= medio.id, defaults= { 'Tipo_resultado': nuevo_resultado }
 		)
-		clientWhatsapp.send_message( medio.sms_mensaje ,"57"+usuaria.celular)
-
-
-def respond(message):
-    response = MessagingResponse()
-    response.message(message)
-    return str(response)
-
-def aux_reply2(campania, usuaria, request):
-	campaign_mediums = mediosxcampania.objects.filter(campania_id = campania.id)
-	mediums = [ Medio.objects.get(pk = m.medio_id.id) for m in campaign_mediums]
-	whatsappMedium = [ medio for medio in mediums if medio.tipo_medio.descripcion == 5 ]
-	tipoRes = Tipo_resultado.objects.get( descripcion = "r" )
-
-	message = request.POST["Body"]
-	if message == '1':
-		return respond('Gracias por querer participar')
-	if message == '2':
-		return respond('Entendemos que no quieras participar')
