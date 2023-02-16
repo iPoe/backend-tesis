@@ -385,12 +385,23 @@ def reply_whatsapp(request):
 			print(campañas_activas)
 			if len(campañas_activas):
 				for campania in campañas_activas:
-					aux_reply2(campania,usuaria, request)
-				return JsonResponse("Respuesta de whatsapp enviada",status=201,safe=False)
+					# aux_reply2(campania,usuaria, request)
+					message = request.POST["Body"]
+					if message == '1':
+						msg = respond('Gracias por querer participar')
+						clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
+
+					if message == '2':
+						msg = respond('Entendemos que no quieras participar')
+						clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
+					else:
+						msg = respond("Para recibir más información, se puede comunicar con la Red de Salud ladera al teléfono 8937711 Ext 0\n ¡Gracias por responder!\nGracias por responder y por su interés, para mayor información, comuníquese con la E.S.E. Ladera al teléfono 8937711 Ext 0.")
+						clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
+				return HttpResponse("Message sended okay.", content_type="text/plain")
 		except Exception as e:
 			print(e)
 			traceback.print_exc()
-			return JsonResponse("Error al responder al wp",status=400,safe=False)
+			return HttpResponse("Error when trying to send msg.", content_type="text/plain")
 
 def aux_reply(campania, usuaria):
 	medsxcamp = mediosxcampania.objects.filter(campania_id = campania.id)
