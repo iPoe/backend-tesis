@@ -403,15 +403,22 @@ def reply_whatsapp(request):
 			return JsonResponse("Error al guardar resultado Medio",status=400,safe=False)
 
 def cambiar_estado(campanias, usuaria, resultado):
+	fechaActual = date.today()
 
 	for campania in campanias:
 		medios_campaña = mediosxcampania.objects.filter(campania_id = campania.id)
 		lista_medios = [ Medio.objects.get(pk = m.medio_id.id) for m in medios_campaña]
-		medio_whatsapp = [ medio for medio in lista_medios if medio.tipo_medio.descripcion == 5 ]
+		medio_whatsapp = [ medio for medio in lista_medios if medio.tipo_medio.descripcion == 5 ][0]
 		nuevo_resultado = Tipo_resultado.objects.get( descripcion = resultado )
+		nuevos_valores = {'Tipo_res': nuevo_resultado }
 
-		medio = medio_whatsapp[0]
-		result, created = resultadosxcampania.objects.update_or_create(
-			contacto_cc= usuaria.identidad, campania_id= campania.id,
-			medio_id= medio.id, defaults= { 'Tipo_resultado': nuevo_resultado }
-		)
+		try:
+			obj = resultadosxcampania.get(
+				contacto_cc= usuaria.identidad, campania_id= campania.id,
+				medio_id= medio_whatsapp.id, fecha= fechaActual
+			)
+			for key, value in nuevos_valores.items():
+				setattr(obj, key, value)
+			obj.save()
+		except Exception as e:
+			print(e)
