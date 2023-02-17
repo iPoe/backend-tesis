@@ -410,7 +410,7 @@ def cambiar_estado(campanias, usuaria, resultado):
 		lista_medios = [ Medio.objects.get(pk = m.medio_id.id) for m in medios_campaña]
 		medio_whatsapp = [ medio for medio in lista_medios if medio.tipo_medio.descripcion == 5 ][0]
 		nuevo_resultado = Tipo_resultado.objects.get( descripcion = resultado )
-		nuevos_valores = {'Tipo_res': nuevo_resultado }
+		nuevos_valores = {'Tipo_resultado': nuevo_resultado }
 
 		try:
 			obj = resultadosxcampania.objects.get(
