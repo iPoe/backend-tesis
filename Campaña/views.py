@@ -225,11 +225,11 @@ def save_result(request):
 	if request.method == 'POST':
 		try:
 			with transaction.atomic():
-				data,textRes = request.data,"no"
+				data,textRes = request.data,"7"
 				print(data)
 				idres = int(data['idLlamada'])
 				if data['res'] == 'completed' or data['res'] == 'delivered':
-					textRes = "si"
+					textRes = "6"
 				tipoRes = Tipo_resultado.objects.get(descripcion = textRes)
 				res = resultadosxcampania.objects.update_or_create(pk = idres,defaults={'Tipo_resultado':tipoRes})
 				return JsonResponse("Update completed",status=201,safe=False)
@@ -336,7 +336,7 @@ def test_estadisticas(request):
 							dicresxmed,i = {},1
 						strMedio = "medio_{}".format(i)
 						tipo_resultado = res['Tipo_resultado']
-						dic_resultados = {1: "1", 2: "5", 6: "3", 4: "2", 5: "4", 3: "1"}
+						dic_resultados = {1: "1", 2: "5", 6: "3", 4: "2", 5: "4", 3: "1", 9: "Si", 10: "No"}
 						dicresxmed[strMedio] = dic_resultados[tipo_resultado]
 
 						contacantiguo = res['contacto_cc']
