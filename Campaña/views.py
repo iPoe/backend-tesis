@@ -413,7 +413,7 @@ def cambiar_estado(campanias, usuaria, resultado):
 		nuevos_valores = {'Tipo_res': nuevo_resultado }
 
 		try:
-			obj = resultadosxcampania.get(
+			obj = resultadosxcampania.objects.get(
 				contacto_cc= usuaria.identidad, campania_id= campania.id,
 				medio_id= medio_whatsapp.id, fecha= fechaActual
 			)
