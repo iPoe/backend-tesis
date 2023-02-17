@@ -336,8 +336,8 @@ def test_estadisticas(request):
 							dicresxmed,i = {},1
 						strMedio = "medio_{}".format(i)
 						tipo_resultado = res['Tipo_resultado']
-						dic_resultados = {1: "1", 2: "5", 6: "3", 4: "2", 5: "4"}
-						dicresxmed[strMedio] = dic_resultados[res['Tipo_resultado']]
+						dic_resultados = {1: "1", 2: "5", 6: "3", 4: "2", 5: "4", 3: "1"}
+						dicresxmed[strMedio] = dic_resultados[tipo_resultado]
 
 						contacantiguo = res['contacto_cc']
 						i+=1
