@@ -19,7 +19,10 @@ clientSMS = SMS()
 clientVoice = VoiceCall()
 clientWhatsapp = WhatsApp()
 #whatsapp_Template = 'Hola te escribimos de parte de la Red de Salud Ladera, el dia de hoy tenemos información muy importante para ti, si deseas saber mas por favor responde a este mensaje.'
-whatsapp_Template = "¡Hola! Te escribimos para hacerte parte de una prueba\nde servicios de tamizaje con la Red de Salud Ladera.\nTe solicitamos responder el número de acuerdo a tu preferencia.\n 1. SI deseo participar en la prueba\n 2. NO deseo participar en la prueba"
+whatsapp_Template = """¡Hola! te escribimos para darte a conocer nuestros servicios de salud en la Red de Salud Ladera. ¿Aceptas\n recibir esta información?:\n
+- Responde con el número *1* si quieres continuar\n
+- Responde con el número *2* si no quieres continuar
+"""
 
 def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     cam = Campania.objects.get(pk=campId)
