@@ -1,7 +1,7 @@
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Say, Play
 from django.conf import settings
-from email.mime.text import MIMEText 
+from email.mime.text import MIMEText
 import smtplib
 import requests
 
@@ -44,7 +44,7 @@ class VoiceCall:
         (twilio_number, twilio_account_sid, twilio_auth_token, twilio_number_whatsapp) = load_twilio_config()
         self.twilio_number = twilio_number
         self.twilio_client = Client(twilio_account_sid, twilio_auth_token)
-    
+
     def voice_call(self, voiceCall, urlMP3, to, idLlamada):
         response = VoiceResponse()
         say = Say(voiceCall, voice='Polly.Lupe-Neural')
@@ -55,7 +55,7 @@ class VoiceCall:
             twiml = response,
             to=to,
             from_=self.twilio_number,
-            status_callback='https://coffee-cuscus-4020.twil.io/status-callback-voice?idLlamada='+idLlamada,
+            status_callback='https://contactall-9402.twil.io/voice?idLlamada='+idLlamada,
             status_callback_method='POST',
             timeout=30,
         )
@@ -117,7 +117,7 @@ class Email:
         message_email['To'] = ", ".join(to)
         message_email['Subject'] = subject
         text = message_email.as_string()
-      
+
         self.server.sendmail(
             self.email_email,
             to, text
@@ -141,7 +141,7 @@ def main():
 
     """ clientSMS = SMS()
     clientSMS.send_message('¡Hola Buenos días! Paula Recuerda nuestra reunión de las 10:00am del día 23 de diciembre, Atentamente: Software de Salud Pública', numeroWilliam, 'William') """
-    """ 
+    """
     for admin in administrators:
         clientSMS.send_message(message_to_send, admin['phone_number'])
     """
@@ -150,15 +150,13 @@ def main():
     clientWhatsApp = WhatsApp()
     clientWhatsApp.send_media('¡Esto es una super prueba desde Salud Pública para el mundo!', '+573022118294', 'https://demo.twilio.com/owl.png')
     """
-    
+
     #clientEmail = Email()
-    
-    
+
+
     clientVoice = VoiceCall()
     mensajeVoz = '¡Hola! Te llamamos desde Salud Pública, queremos darte la bienvenida a las nueva era digital de las llamadas automáticas, es un placer para mi hablarte, deseo que pronto nos conozcamos, ¡Muchas gracias! Y te deseo una Feliz Navidad y Próspero año nuevo, ¡Hasta luego y lindo día!'
     mp3 = 'https://dl.dropboxusercontent.com/s/3teh8x28x3kre75/Prueba-1.mp3'
     mp3_2 = ''
     clientVoice.voice_call(mensajeVoz, mp3, numeroJP, 'William') #Telefono Fijo
     #clientVoice.voice_call(mensajeVoz, mp3_2, numeroFijo, 'William') #Celular
-
-
