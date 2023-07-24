@@ -18,7 +18,8 @@ from .twilioAPI import VoiceCall,SMS,Email,WhatsApp
 clientSMS = SMS()
 clientVoice = VoiceCall()
 clientWhatsapp = WhatsApp()
-whatsapp_Template = "¡Hola! te escribimos para darte a conocer nuestros servicios de salud en la Red de Salud Ladera. ¿Aceptas recibir esta información?:\n- Responde con el número *1* si quieres continuar\n- Responde con el número *2* si no quieres continuar"
+# whatsapp_Template = "¡Hola! te escribimos para darte a conocer nuestros servicios de salud en la Red de Salud Ladera. ¿Aceptas recibir esta información?:\n- Responde con el número *1* si quieres continuar\n- Responde con el número *2* si no quieres continuar"
+whatsapp_Template = "¡Atención mujer ancuyana! ¡Prioriza tu salud! Ven a realizarte la citología gratuita en el Centro de Salud Ancuya ESE. Horarios flexibles: Todas las tardes de lunes a viernes de 2-5 pm y los días Lunes, Miércoles, Viernes: 8-11 am. ¡Agenda tu cita previa ahora! Tel: 3174363751. ¡Cuidemos juntas nuestra salud!#CitologíaAncuyana"
 
 def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     cam = Campania.objects.get(pk=campId)
@@ -26,10 +27,10 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     name = "Task" + str(m.id)+str(hora)+str(minute)
 
     idTask = []
-    if m.tipo_medio.descripcion == 4:            
+    if m.tipo_medio.descripcion == 4:
         schedule = customSchedule(hora,minute)
         sms_camp= PeriodicTask.objects.create(
-            crontab=schedule,            
+            crontab=schedule,
             name=name,
             task='enviar_sms',
             args=json.dumps([campId,mId]),
@@ -40,7 +41,7 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
         tel = 1
         schedule = customSchedule(hora,minute)
         llamadaTel= PeriodicTask.objects.create(
-            crontab=schedule,            
+            crontab=schedule,
             name=name,
             task='llamadas',
             args=json.dumps([campId,mId,tel]),
@@ -50,7 +51,7 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     elif m.tipo_medio.descripcion == 1:
         schedule = customSchedule(hora,minute)
         llamadaCel= PeriodicTask.objects.create(
-            crontab=schedule,            
+            crontab=schedule,
             name=name,
             task='llamadas',
             args=json.dumps([campId,mId]),
@@ -60,7 +61,7 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     elif m.tipo_medio.descripcion == 3:
         schedule = customSchedule(hora,minute)
         envioCorreos= PeriodicTask.objects.create(
-            crontab=schedule,            
+            crontab=schedule,
             name=name,
             task='correos',
             args=json.dumps([campId,mId]),
@@ -70,7 +71,7 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     elif m.tipo_medio.descripcion == 5:
         schedule = customSchedule(hora,minute)
         enviarWp= PeriodicTask.objects.create(
-            crontab=schedule,            
+            crontab=schedule,
             name=name,
             task='enviar_wp',
             args=json.dumps([campId,mId]),
@@ -82,7 +83,7 @@ def crearTareaCampaña(campId,hora,minute,mId,tel=""):
 
     cam.tasksIds.append(idTask)
     cam.save()
-    
+
 def llamar_usuarias(ID,mId,tel=''):
     cons = contactosxcampa.objects.filter(campania = ID)
     m = Medio.objects.get(pk=mId)
@@ -103,7 +104,7 @@ def envMensajeUsuarias(ID,mId):
     cons = contactosxcampa.objects.filter(campania = ID)
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
     txt = m.sms_mensaje
-    numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]    
+    numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
     camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
     for n in range(cant):
@@ -160,7 +161,7 @@ def enviarWhatsapp(ID,mId):
 def camp_activa(campId):
     fechaActual = date.today()
     camp = Campania.objects.get(pk = campId)
-    estado = False 
+    estado = False
     if camp.fechaInicio == fechaActual:
         e = estado_campania.objects.get(descripcion=1)
         camp.estado = e
@@ -206,7 +207,7 @@ def disableTaskxCamp(campID):
         periodic_task.delete()
     inactiva = estado_campania.objects.get(descripcion=3)
     camp.estado = inactiva
-    camp.save()      
+    camp.save()
 
 
 def customSchedule(h,m):
