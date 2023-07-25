@@ -18,8 +18,8 @@ from .twilioAPI import VoiceCall,SMS,Email,WhatsApp
 clientSMS = SMS()
 clientVoice = VoiceCall()
 clientWhatsapp = WhatsApp()
-# whatsapp_Template = "¡Hola! te escribimos para darte a conocer nuestros servicios de salud en la Red de Salud Ladera. ¿Aceptas recibir esta información?:\n- Responde con el número *1* si quieres continuar\n- Responde con el número *2* si no quieres continuar"
-whatsapp_Template = "¡Atención mujer ancuyana! ¡Prioriza tu salud! Ven a realizarte la citología gratuita en el Centro de Salud Ancuya ESE. Horarios flexibles: Todas las tardes de lunes a viernes de 2-5 pm y los días Lunes, Miércoles, Viernes: 8-11 am. ¡Agenda tu cita previa ahora! Tel: 3174363751. ¡Cuidemos juntas nuestra salud!#CitologíaAncuyana"
+whatsapp_Template = "¡Hola! te escribimos para darte a conocer nuestros servicios de salud en el Centro de Salud Ancuya ESE. ¿Aceptas recibir esta información?:\n- Responde con el número *1* si quieres continuar\n- Responde con el número *2* si no quieres continuar"
+# whatsapp_Template = "¡Atención mujer ancuyana! ¡Prioriza tu salud! Ven a realizarte la citología gratuita en el Centro de Salud Ancuya ESE. Horarios flexibles: Todas las tardes de lunes a viernes de 2-5 pm y los días Lunes, Miércoles, Viernes: 8-11 am. ¡Agenda tu cita previa ahora! Tel: 3174363751. ¡Cuidemos juntas nuestra salud!#CitologíaAncuyana"
 
 def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     cam = Campania.objects.get(pk=campId)
