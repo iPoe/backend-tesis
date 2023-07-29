@@ -381,6 +381,8 @@ def reply_whatsapp(request):
 			campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
 			estado_activo = estado_campania.objects.get(descripcion=1)
 			campañas_activas = [ camp.campania for camp in campañas_usuaria if camp.campania.estado == estado_activo]
+			print("usuaria", usuaria)
+			print("campañas_usuaria", campañas_usuaria)
 			print(campañas_activas)
 			if len(campañas_activas) > 0:
 				message = request.POST["Body"]
