@@ -20,7 +20,7 @@ import traceback
 
 #1cel,2tel,correo3,sms4,wp5
 from .models import (Campania,
-	Contacto, 
+	Contacto,
 	Medio,
 	contactosxcampa,
 	Operador,
@@ -57,7 +57,7 @@ def login_view(request):
 	response = Response()
 	if (email is None) or (password is None):
 		raise exceptions.AuthenticationFailed('email and password required')
-	
+
 	operador = Usuario.objects.filter(email = email).first()
 	if(operador is None):
 		raise exceptions.AuthenticationFailed('user not found')
@@ -89,7 +89,7 @@ def change_estado_campania(ID):
 
 @api_view(['GET'])
 def recuento_camp(request):
-	try:		
+	try:
 		data = {
 			'finalizadas':0,
 			'programadas':0,
@@ -124,7 +124,7 @@ def get_campanias(request):
 				if len(mxc)>0:
 					medioSerializer = contactosxcampSerializer(mxc,many=True)
 					x['medios'] = medioSerializer.data
-					
+
 			return JsonResponse(data,status=201,safe=False)
 	except Exception as e:
 		print(e)
@@ -173,7 +173,7 @@ def endCamp(request):
 			return JsonResponse("Error en finalizar camp",status=400,safe=False)
 
 @api_view(['POST','PATCH','GET'])
-def campania_view(request):	
+def campania_view(request):
 
 	if request.method=='GET':
 		try:
@@ -225,11 +225,11 @@ def save_result(request):
 	if request.method == 'POST':
 		try:
 			with transaction.atomic():
-				data,textRes = request.data,"7"
+				data,textRes = request.data,"no"
 				print(data)
 				idres = int(data['idLlamada'])
 				if data['res'] == 'completed' or data['res'] == 'delivered':
-					textRes = "6"
+					textRes = "si"
 				tipoRes = Tipo_resultado.objects.get(descripcion = textRes)
 				res = resultadosxcampania.objects.update_or_create(pk = idres,defaults={'Tipo_resultado':tipoRes})
 				return JsonResponse("Update completed",status=201,safe=False)
@@ -245,13 +245,13 @@ def login_operador(request):
 
 				data = request.data
 				correo,password = data['email'],data['clave']
-				
+
 				operador = Operador.objects.filter(email = correo)
-				
+
 				if len(password)!=0 and len(operador)>0:
-					
+
 					if password != operador[0].clave:
-						
+
 						data = {
 						'error':'Contraseña incorrecta',
 						}
@@ -262,7 +262,7 @@ def login_operador(request):
 						'email':correo,
 						'id': operador[0].id,
 						'token': 'beaker 123456789'
-						
+
 
 						}
 						return Response(data)
@@ -284,7 +284,7 @@ def auxHMedio(idm):
 	if med.intensidad == 3:
 		lista_horas = [med.hora1,med.hora2,med.hora3]
 	elif med.intensidad == 2:
-		lista_horas = [med.hora1,med.hora2]	
+		lista_horas = [med.hora1,med.hora2]
 	else:
 		lista_horas = [med.hora1]
 	return lista_horas
@@ -321,13 +321,13 @@ def test_estadisticas(request):
 				campania,dataest = Campania.objects.get(pk = idcampania),estaux(idcampania)
 				resultadosCampania = resultadosxcampania.objects.filter(campania_id=campania).values('contacto_cc',
 				'medio_id','Tipo_resultado').order_by('contacto_cc','medio_id')
-				
+
 				i = 1
 				dicresxmed = {}
 				if len(resultadosCampania) > 0:
 					contacantiguo,listausers = resultadosCampania[0]['contacto_cc'],list()
 					for res in resultadosCampania:
-						#contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])				
+						#contactoActual = Contacto.objects.get(identidad=res['contacto_cc'])
 						if res['contacto_cc']!= contacantiguo:
 							contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
 							diccont = contSer.data
@@ -351,7 +351,7 @@ def test_estadisticas(request):
 					dataest['estadistica'] = []
 
 				return JsonResponse(dataest,status=201,safe=False)
-				
+
 		except Exception as e:
 			print("Un error ocurrio en las estadisticas")
 			print(e)
@@ -375,6 +375,8 @@ def test_estadisticas(request):
 def reply_whatsapp(request):
 	if request.method == 'POST':
 		try:
+			print("Reply whatsapp")
+			print(request.data)
 			usuaria = Contacto.objects.filter(celular=request.data['WaId'][2:]).first()
 			campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
 			estado_activo = estado_campania.objects.get(descripcion=1)
