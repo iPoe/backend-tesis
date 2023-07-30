@@ -225,11 +225,12 @@ def save_result(request):
 	if request.method == 'POST':
 		try:
 			with transaction.atomic():
-				data,textRes = request.data,"no"
+				data,textRes = request.data,7
 				print(data)
 				idres = int(data['idLlamada'])
-				if data['res'] == 'completed' or data['res'] == 'delivered':
-					textRes = "si"
+				good_status = ['completed', 'delivered', 'read']
+				if data['res'] in good_status:
+					textRes = 6
 				tipoRes = Tipo_resultado.objects.get(descripcion = textRes)
 				res = resultadosxcampania.objects.update_or_create(pk = idres,defaults={'Tipo_resultado':tipoRes})
 				return JsonResponse("Update completed",status=201,safe=False)
@@ -377,6 +378,7 @@ def reply_whatsapp(request):
 		try:
 			print("Reply whatsapp")
 			print(request.data)
+			print("Usuarias", Contacto.objects.filter(celular=request.data['WaId'][2:]))
 			usuaria = Contacto.objects.filter(celular=request.data['WaId'][2:]).first()
 			campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
 			estado_activo = estado_campania.objects.get(descripcion=1)
