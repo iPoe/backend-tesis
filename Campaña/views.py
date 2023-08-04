@@ -386,6 +386,10 @@ def reply_whatsapp(request):
 			print("usuaria", usuaria)
 			print("campañas_usuaria", campañas_usuaria)
 			print(campañas_activas)
+			medios_campaña = mediosxcampania.objects.filter(campania_id = campañas_activas[0].id)
+			lista_medios = [ Medio.objects.get(pk = m.medio_id.id) for m in medios_campaña]
+			medio_whatsapp = [ medio for medio in lista_medios if medio.tipo_medio.descripcion == 5 ][0]
+			mensaje_campaña = medio_whatsapp.sms_mensaje
 			if len(campañas_activas) > 0:
 				message = request.POST["Body"]
 				if message == '1':
@@ -399,6 +403,7 @@ def reply_whatsapp(request):
 					resultado = '3'
 				cambiar_estado(campañas_activas, usuaria, resultado)
 				clientWhatsapp.send_message( msg ,"57"+usuaria.celular)
+				clientWhatsapp.send_message( mensaje_campaña ,"57"+usuaria.celular)
 			return JsonResponse("Reply completed",status=201,safe=False)
 		except Exception as e:
 			print(e)
