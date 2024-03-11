@@ -69,11 +69,17 @@ class WhatsApp:
         self.twilio_number_whatsapp = twilio_number_whatsapp
         self.twilio_client = Client(twilio_account_sid, twilio_auth_token)
 
-    def send_message(self, body, to,idWhatsapp=""):
+    def send_message(self, body, to,idWhatsapp="", content_sid=""):
         if len(idWhatsapp):
             message_whatsapp = self.twilio_client.messages.create(
                 body=body,
                 status_callback = 'https://coffee-cuscus-4020.twil.io/status-callback-wp?idLlamada='+idWhatsapp,
+                to='whatsapp:'+to,
+                from_='whatsapp:'+self.twilio_number_whatsapp,
+            )
+        elif len(content_sid):
+            message_whatsapp = self.twilio_client.messages.create(
+                content_sid=content_sid,
                 to='whatsapp:'+to,
                 from_='whatsapp:'+self.twilio_number_whatsapp,
             )
