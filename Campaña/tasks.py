@@ -153,7 +153,13 @@ def enviarWhatsapp(ID,mId):
     for u in usuariasCamp:
         res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
         res.save()
-        clientWhatsapp.send_message(whatsapp_Template,"57"+u.contacto.celular,str(res.id))
+        # clientWhatsapp.send_message(whatsapp_Template,"57"+u.contacto.celular,str(res.id))
+        clientWhatsapp.send_content_message(
+            'HX1c9b04c28f67e2afbe2784b76caf6bcb',
+            'MGfc684cdf8bd8a626ecf36c9e976c9055',
+            "57"+u.contacto.celular,
+            str(res.id)
+        )
 
 
 

@@ -85,6 +85,15 @@ class WhatsApp:
             )
 
         print(message_whatsapp.sid)
+    
+    def send_content_message(self, content_sid, message_service_id, to, idWhatsapp):
+        message_whatsapp = self.twilio_client.messages.create(
+            content_sid = content_sid,
+            from_ = message_service_id,
+            to = 'whatsapp:'+to,
+            status_callback = 'https://coffee-cuscus-4020.twil.io/status-callback-wp?idLlamada='+idWhatsapp
+        )
+        print(message_whatsapp.sid)
 
     def send_media(self, body, to, image):
         message_whatsapp = self.twilio_client.messages.create(
