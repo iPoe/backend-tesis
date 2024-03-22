@@ -156,7 +156,7 @@ def enviarWhatsapp(ID,mId):
         res.save()
         # clientWhatsapp.send_message(whatsapp_Template,"57"+u.contacto.celular,str(res.id))
         newWhatsappClient.send_content_message(
-            'HX0d76bc830d363245245f7500d8e2c61e',
+            'HX5c5b1208481599f3888185fa9832432e',
             'MGfc684cdf8bd8a626ecf36c9e976c9055',
             "57"+u.contacto.celular,
             str(res.id)
