@@ -139,7 +139,8 @@ class RestAccount:
         self.twilio_client = Client(twilio_account_sid, twilio_auth_token)
 
     def get_account_balance(self):
-        return self.twilio_client.api.v2010.balance.fetch().balance
+        account = self.twilio_client.api.v2010.accounts(settings.TID).fetch()
+        return account.balance.fetch().balance
 
 def main():
     numeroPaula = '+573006124086'
