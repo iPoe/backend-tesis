@@ -19,7 +19,7 @@ clientSMS = SMS()
 clientVoice = VoiceCall()
 clientWhatsapp = WhatsApp()
 newWhatsappClient = WhatsApp()
-content_sid = 'HXba1468787b6c84889fefe3d2b3ef0fb2'
+content_sid = 'HX02da86f2025af10f9f8f6f60178370f7'
 
 def crearTareaCampaña(campId,hora,minute,mId,tel=""):
     cam = Campania.objects.get(pk=campId)
