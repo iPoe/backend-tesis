@@ -33,7 +33,7 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.contactall.me']
+ALLOWED_HOSTS = ['.contactall.me','127.0.0.1']
 
 
 # Application definition
@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'django_crontab',
 
     #My apps
-    'Campaña.apps.CampañaConfig',
+    'campaigns.apps.CampaignsConfig',
     #Celery
     'django_celery_beat',
     
@@ -162,7 +162,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'Campaña.Usuario'
+AUTH_USER_MODEL = 'campaigns.Usuario'
 
 
 # Internationalization

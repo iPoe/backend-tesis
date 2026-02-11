@@ -21,7 +21,7 @@ admin.site.__class__ = OTPAdminSite
 
 
 urlpatterns = [
-	path('',include('Campaña.urls')),
+	path('',include('campaigns.urls')),
     path('admin/', admin.site.urls),
     
 ]

@@ -1,66 +1,138 @@
-# API SALUD-PUBLICA
+# 🚀 ContactAll API: Advanced Campaign Orchestration
 
-Este repositorio contiene la API usada en la aplicacion de salud-publica
+> **Modern Public Health Communication & Management System**
 
-### To-do
-- Cambiar el front para que envie el asunto y dirección de correo
-- Definir si usar django-test o pruebas automaticas con selenium
+ContactAll is a robust Django-based API designed to orchestrate large-scale communication campaigns across multiple channels including **Email**, **SMS**, **WhatsApp**, and **Voice Calls**. Built with security, modularity, and scalability at its core.
 
-#### Despliegue en Heroku
-Primero guarda tus cambios:\
-`$ git commit -am "Guardar ultimos cambios`\
-Para enviar la rama master a Heroku usa:\
-`$ git push heroku master`\
-Para enviar cualquier otra rama a Heroku usa:\
-`$ git push heroku nombrerama:master`
+---
 
-#### Despliegue del front end en Google Cloud
-Primero se debe compilar el front para el deployment en GCP usando:\
-`$ npm run build`\
-Luego de compilar los archivos para el deployment usa:\
-`$ gcloud app deploy`
+## 🏛️ System Architecture
 
-## Despliegue de la API en Google Cloud
-Enviar los ultimos cambios de la rama para google cloud a git:\
-`$git commit -am "Guardar ultimos cambios"`\
-`$git push origin computeEngine-deployment`\
-En la maquina virtual de google cloud, traer los ultimos cambios:\
-`$git fetch origin`\
-Ver los paquetes de python instalados en el venv:\
-`$sudo pip freeze`\
-Conectarme por terminar de linux a la instancia de compute engine de la api\
-`$ gcloud compute ssh saludpublica-api --project salud-publica-puj --zone us-central1-a`
+Our architecture is designed for high-throughput and reliable delivery of messages.
 
-Despliega la app en el background con gunicorn\
-`$ sudo gunicorn --config dev.py salud_publica.wsgi`
+```mermaid
+graph TD
+    A[Client / Frontend] -->|REST API| B(Django + DRF)
+    B -->|Database Query| C[(PostgreSQL)]
+    B -->|Queue Task| D[Redis]
+    D -->|Consume| E[Celery Workers]
+    E -->|SMTP| F[Mailgun / Email]
+    E -->|Rest API| G[Twilio / SMS & Voice]
+    E -->|Rest API| H[Twilio / WhatsApp]
+```
 
-Rastrea los logs que va dejando tu aplicación\
-`$ sudo tail -f /var/log/gunicorn/dev.log`
+---
 
-Cuando necesites parar gunicorn usa:\
-`$ pkill gunicorn`
+## ✨ Key Features
 
-Debido a que usas una llave de deployment de github para traer los cambios
-a la maquina virtual de Google, recuerda usar los siguientes comandos para
-poder usar git pull sin errores:\
-`$ eval ssh-agent`\
-`$ ssh-add ~/.ssh/id_rsa`\
-`$ git pull`
+- **Multi-Channel Delivery**: Unified interface for Email, SMS, WhatsApp, and Voice (TTS/File).
+- **Campaign Management**: Automated scheduling and management of communication windows.
+- **Advanced Analytics**: Real-time statistics and summaries of campaign performance.
+- **Secure Authentication**: Robust JWT-based authentication for operators and users.
+- **Specialized Media Models**: Clean inheritance-based model structure for channel-specific data.
+- **Background Processing**: Reliable task execution powered by Celery and Redis.
 
-## Cuando quieras borrar todo
-Como recordaras es usual que tengas que borrar todo e iniciar desde cero
-por lo cual aqui te van unos tips de como lograrlo:
-- Conectate por medio de psql a la BD `$ psql -h 34.135.94.2 -U postgres postgres`
-- Luego borrale y vuelve la a crear usando `$ DROP DATABASE "mydb";` y luego `$ CREATE DATABASE mydb`
-- Si la borras te recuerdo que ya no tienes un dispositivo con 2FA por lo cual debes ir los urls principales y comentar la linea
-de admin site que usa OTP auth
-## Cuando necesites cambiar la versión de node
-Es muy probable que te encuentres usando diferentes veriones de node, por lo cual es bueno que instales nvm, y para que compiles sin errores el front uses la versión 12, abajo dejo el comando de como se cambia:\
-`$ nvm use 12`
+---
 
+## 🛠️ Technology Stack
 
+| Category | Technology |
+| :--- | :--- |
+| **Framework** | [Django 5.2](https://www.djangoproject.com/) |
+| **API** | [Django REST Framework](https://www.django-rest-framework.org/) |
+| **Database** | [PostgreSQL](https://www.postgresql.org/) |
+| **Task Queue** | [Celery](https://docs.celeryproject.org/) + [Redis](https://redis.io/) |
+| **Communication** | [Twilio](https://www.twilio.com/), [Mailgun](https://www.mailgun.com/) |
+| **Security** | [PyJWT](https://pyjwt.readthedocs.io/), [Django-OTP](https://django-otp-official.readthedocs.io/) |
 
-Continue reading these posts:
-- https://crown-s.medium.com/set-up-redis-on-gcp-virtual-machine-c84c4fac456
-- https://realpython.com/django-nginx-gunicorn/
-- https://www.digitalocean.com/community/tutorials/como-configurar-django-con-postgres-nginx-y-gunicorn-en-ubuntu-18-04-es
+---
+
+## 🚀 Getting Started
+
+### 1. Environment Setup
+We recommend using **Conda** for environment management:
+
+```bash
+conda create -n contactallapi python=3.14
+conda activate contactallapi
+pip install -r requirements.txt
+```
+
+### 2. Configuration
+Create a `.env` file in the project root following the structure in `.env.example`:
+
+```env
+# Core Django
+SECRET_KEY=your_secret_key
+DEBUG=True
+
+# Database
+postdbName=your_db_name
+post_user=your_user
+post_password=your_password
+postHost=localhost
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+```
+
+### 3. Database & Tasks
+Initialize your database and start the workers:
+
+```bash
+# Sincronizar modelos
+python manage.py migrate
+
+# Iniciar Celery Worker
+celery -A salud_publica worker --loglevel=info
+
+# Iniciar Celery Beat (Scheduler)
+celery -A salud_publica beat --loglevel=info
+```
+
+---
+
+## 🧪 Development & Testing
+
+We maintain a high standard of code quality through comprehensive testing.
+
+```bash
+# Ejecutar suite de pruebas
+python manage.py test campaigns
+```
+
+---
+
+## 🌐 API Overview
+
+All modern endpoints are served under `/campaigns/api/`:
+
+- `GET /campaigns/api/campaigns/` - List all campaigns.
+- `POST /campaigns/api/campaigns/` - Create a new campaign (complex setup).
+- `GET /campaigns/api/campaigns/{id}/statistics/` - Detailed performance metrics.
+- `GET /campaigns/api/contacts/existing_groups/` - List predefined contact groups.
+
+---
+
+## ☁️ Deployment Notes
+
+### Heroku
+```bash
+git push heroku master
+```
+
+### Google Cloud (Compute Engine)
+1. **Prepare VM**: Connect via SSH and pull latest changes.
+2. **Restart Service**:
+```bash
+sudo pkill gunicorn
+sudo gunicorn --config dev.py salud_publica.wsgi
+```
+
+---
+
+> [!NOTE]
+> This project was recently refactored to prioritize **Class-Based Views**, **Model Inheritance**, and **JWT Authentication**. Legacy functional views have been deprecated in favor of the new ViewSet architecture.
+
+---
+Produced with ❤️ by **Antigravity** (Gemi Holmes)
