@@ -125,3 +125,30 @@ class campaignsTests(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(EmailMedio.objects.count(), 1)
+
+    @patch('campaigns.viewsets.disableTaskxCamp')
+    def test_campaign_end_action(self, mock_disable):
+        # Create an active campaign
+        camp = Campania.objects.create(
+            nombre="Test End Campaign",
+            fechaInicio=datetime.date.today(),
+            fechaFin=datetime.date.today() + datetime.timedelta(days=10),
+            duracion=10,
+            operador_ID=self.operador,
+            estado=estado_campania.objects.get(descripcion=1)
+        )
+
+        url = reverse('campaigns:campaign-end', kwargs={'pk': camp.pk})
+        data = {
+            "fechaFin": "28-02-2026",
+            "duracion": "5"
+        }
+
+        response = self.client.put(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        camp.refresh_from_db()
+        self.assertEqual(camp.estado.descripcion, 3)
+        self.assertEqual(camp.fechaFin, datetime.date(2026, 2, 28))
+        self.assertEqual(camp.duracion, 5)
+        mock_disable.assert_called_once_with(camp.id)
