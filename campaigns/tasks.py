@@ -53,13 +53,24 @@ def crearTareacampaigns(campId, hora, minute, mId, tel=""):
         )
         CampaignTask.objects.create(campania=cam, periodic_task_id=periodic_task.id, medio=m)
 
-def llamar_usuarias(ID,mId,tel=''):
-    cons = contactosxcampa.objects.filter(campania = ID)
+def llamar_usuarias(ID, mId, tel=''):
+    cons = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
     m = Medio.objects.get(pk=mId)
     fechaActual = date.today()
-    numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
-    if tel == 1:
-        numerosUsuarias = ["+57"+obj.contacto.telefono for obj in cons]
+    camp = Campania.objects.get(pk=ID)
+
+    resultados = [
+        resultadosxcampania(
+            contacto_cc=obj.contacto,
+            campania_id=camp,
+            medio_id=m,
+            fecha=fechaActual
+        )
+        for obj in cons
+    ]
+    # bulk_create returns the objects with IDs populated when using PostgreSQL
+    resultados_creados = resultadosxcampania.objects.bulk_create(resultados)
+
     m_voice = m.voicemedio
     matchUrlAudio = True if m_voice.audio_file else False
     mensajeVoz = m_voice.mensaje_texto
@@ -149,7 +160,7 @@ def enviarWhatsapp(ID,mId):
         newWhatsappClient.send_content_message(
             content_sid,
             'MGfc684cdf8bd8a626ecf36c9e976c9055',
-            "57"+u.contacto.celular,
+            "57" + u.contacto.celular,
             str(res.id)
         )
 
