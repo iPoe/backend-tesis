@@ -1,4 +1,3 @@
-from typing import List
 from .models import Campania,contactosxcampa
 from .serializers import campaignsSerializer,ContactosSerializer,MediaSerializer
 from django.db import transaction
