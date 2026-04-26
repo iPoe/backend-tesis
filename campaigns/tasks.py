@@ -75,54 +75,49 @@ def llamar_usuarias(ID, mId, tel=''):
     matchUrlAudio = True if m_voice.audio_file else False
     mensajeVoz = m_voice.mensaje_texto
     urlAUdio = m_voice.audio_file.url if matchUrlAudio else ''
+    camp = Campania.objects.get(pk = ID)
+    cant = len(numerosUsuarias)
 
-    for i, res in enumerate(resultados_creados):
-        contacto = cons[i].contacto
-        numero = "+57" + (contacto.telefono if tel == 1 else contacto.celular)
-        clientVoice.voice_call(mensajeVoz, urlAUdio, numero, str(res.id))
-
-def envMensajeUsuarias(ID, mId):
-    cons = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
-    m, fechaActual = Medio.objects.get(pk=mId), date.today()
-    camp = Campania.objects.get(pk=ID)
-
-    resultados = [
-        resultadosxcampania(
-            contacto_cc=obj.contacto,
-            campania_id=camp,
-            medio_id=m,
-            fecha=fechaActual
-        )
-        for obj in cons
+    res_list = [
+        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        for n in range(cant)
     ]
-    resultados_creados = resultadosxcampania.objects.bulk_create(resultados)
+    created_res = resultadosxcampania.objects.bulk_create(res_list)
 
+    for n, res in enumerate(created_res):
+        clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
+
+def envMensajeUsuarias(ID,mId):
+    cons = contactosxcampa.objects.filter(campania = ID)
+    m,fechaActual = Medio.objects.get(pk=mId),date.today()
     m_sms = m.smsmedio
     txt = m_sms.mensaje
+    numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
+    camp = Campania.objects.get(pk = ID)
+    cant = len(numerosUsuarias)
 
-    for i, res in enumerate(resultados_creados):
-        numero = "+57" + cons[i].contacto.celular
-        clientSMS.send_message(txt, numero, str(res.id))
-
-def enviar_correos(ID, mId):
-    usuarias_campaña = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
-    correosUsuarios = [u.contacto.email for u in usuarias_campaña]
-    m = Medio.objects.get(pk=mId)
-    camp = Campania.objects.get(pk=ID)
-    tipoRes = Tipo_resultado.objects.get(descripcion="si")
-
-    today = date.today()
-    resultados = [
-        resultadosxcampania(
-            contacto_cc=u.contacto,
-            campania_id=camp,
-            medio_id=m,
-            fecha=today,
-            Tipo_resultado=tipoRes
-        )
-        for u in usuarias_campaña
+    res_list = [
+        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        for n in range(cant)
     ]
-    resultadosxcampania.objects.bulk_create(resultados)
+    created_res = resultadosxcampania.objects.bulk_create(res_list)
+
+    for n, res in enumerate(created_res):
+        clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
+
+def enviar_correos(ID,mId):
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
+    m = Medio.objects.get(pk=mId)
+    camp = Campania.objects.get(pk = ID)
+    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
+    tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
+
+    res_list = [
+        resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
+        for usuario in usuarios_campaña
+    ]
+    resultadosxcampania.objects.bulk_create(res_list)
 
     m_email = m.emailmedio
     send_mailgun_message(m_email.remitente, correosUsuarios, m_email.asunto, m_email.cuerpo)
@@ -150,24 +145,18 @@ def send_mailgun_message(from_, to, subject, text, tag=None, track=True):
         msg['X-Mailgun-Track'] = "yes"
     send_message_via_smtp(from_, to, msg.as_string())
 
-def enviarWhatsapp(ID, mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
-    camp = Campania.objects.get(pk=ID)
-    m, fechaActual = Medio.objects.get(pk=mId), date.today()
+def enviarWhatsapp(ID,mId):
+    usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID).select_related('contacto'),Campania.objects.get(pk = ID)
+    m,fechaActual = Medio.objects.get(pk=mId),date.today()
 
-    resultados = [
-        resultadosxcampania(
-            contacto_cc=u.contacto,
-            campania_id=camp,
-            medio_id=m,
-            fecha=fechaActual
-        )
-        for u in usuariasCamp
-    ]
+    resultados = []
+    for u in usuariasCamp:
+        resultados.append(resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual))
+
     resultados_creados = resultadosxcampania.objects.bulk_create(resultados)
 
-    for i, res in enumerate(resultados_creados):
-        u = usuariasCamp[i]
+    for u, res in zip(usuariasCamp, resultados_creados):
+        # clientWhatsapp.send_message(whatsapp_Template,"57"+u.contacto.celular,str(res.id))
         newWhatsappClient.send_content_message(
             content_sid,
             'MGfc684cdf8bd8a626ecf36c9e976c9055',
@@ -218,15 +207,13 @@ def disableTaskxCamp(campID):
     print("Deshabilitanto la campaña")
     print(campID)
     campaign_tasks = CampaignTask.objects.filter(campania=camp)
-    for task_record in campaign_tasks:
-        try:
-            periodic_task = PeriodicTask.objects.get(pk=task_record.periodic_task_id)
-            periodic_task.enabled = False
-            periodic_task.save()
-            periodic_task.delete()
-        except PeriodicTask.DoesNotExist:
-            print(f"PeriodicTask {task_record.periodic_task_id} already deleted.")
+    periodic_task_ids = list(campaign_tasks.values_list('periodic_task_id', flat=True))
     
+    if periodic_task_ids:
+        periodic_tasks = PeriodicTask.objects.filter(pk__in=periodic_task_ids)
+        periodic_tasks.update(enabled=False)
+        periodic_tasks.delete()
+
     campaign_tasks.delete()
     inactiva = estado_campania.objects.get(descripcion=3)
     camp.estado = inactiva
