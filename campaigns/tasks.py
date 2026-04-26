@@ -66,9 +66,14 @@ def llamar_usuarias(ID,mId,tel=''):
     urlAUdio = m_voice.audio_file.url if matchUrlAudio else ''
     camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
-    for n in range(cant):
-        res = resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
-        res.save()
+
+    res_list = [
+        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        for n in range(cant)
+    ]
+    created_res = resultadosxcampania.objects.bulk_create(res_list)
+
+    for n, res in enumerate(created_res):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
@@ -79,9 +84,14 @@ def envMensajeUsuarias(ID,mId):
     numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
     camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
-    for n in range(cant):
-        res = resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
-        res.save()
+
+    res_list = [
+        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        for n in range(cant)
+    ]
+    created_res = resultadosxcampania.objects.bulk_create(res_list)
+
+    for n, res in enumerate(created_res):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
@@ -91,9 +101,13 @@ def enviar_correos(ID,mId):
     camp = Campania.objects.get(pk = ID)
     usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
     tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
-    for usuario in usuarios_campaña:
-        res = resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
-        res.save()
+
+    res_list = [
+        resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
+        for usuario in usuarios_campaña
+    ]
+    resultadosxcampania.objects.bulk_create(res_list)
+
     m_email = m.emailmedio
     send_mailgun_message(m_email.remitente, correosUsuarios, m_email.asunto, m_email.cuerpo)
 
@@ -123,9 +137,14 @@ def send_mailgun_message(from_, to, subject, text, tag=None, track=True):
 def enviarWhatsapp(ID,mId):
     usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID),Campania.objects.get(pk = ID)
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
-    for u in usuariasCamp:
-        res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
-        res.save()
+
+    res_list = [
+        resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        for u in usuariasCamp
+    ]
+    created_res = resultadosxcampania.objects.bulk_create(res_list)
+
+    for u, res in zip(usuariasCamp, created_res):
         # clientWhatsapp.send_message(whatsapp_Template,"57"+u.contacto.celular,str(res.id))
         newWhatsappClient.send_content_message(
             content_sid,
