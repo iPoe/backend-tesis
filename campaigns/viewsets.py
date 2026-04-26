@@ -27,10 +27,6 @@ class CampaignViewSet(viewsets.ModelViewSet):
     queryset = Campania.objects.all()
     serializer_class = campaignsSerializer
 
-    def get_queryset(self):
-        # Override if needed, e.g., for filtering by operator
-        return super().get_queryset()
-
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
