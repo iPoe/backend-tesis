@@ -51,18 +51,18 @@ def login_operador(request):
             correo, password = data.get('email'), data.get('clave')
             operador = Operador.objects.filter(email=correo).first()
 
-            if operador and password:
-                if not check_password(password, operador.clave):
-                    return Response({'error': 'Contraseña incorrecta'}, status=400)
-                else:
-                    access_token = generate_access_token(operador)
-                    return Response({
-                        'email': correo,
-                        'id': operador.id,
-                        'token': access_token
-                    })
-            else:
+            if not operador or not password:
                 return Response({'error': 'Correo o contraseña incorrectos'}, status=400)
+
+            if not check_password(password, operador.clave):
+                return Response({'error': 'Contraseña incorrecta'}, status=400)
+
+            access_token = generate_access_token(operador)
+            return Response({
+                'email': correo,
+                'id': operador.id,
+                'token': access_token
+            })
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
