@@ -135,16 +135,16 @@ def send_mailgun_message(from_, to, subject, text, tag=None, track=True):
     send_message_via_smtp(from_, to, msg.as_string())
 
 def enviarWhatsapp(ID,mId):
-    usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID),Campania.objects.get(pk = ID)
+    usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID).select_related('contacto'),Campania.objects.get(pk = ID)
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
 
-    res_list = [
-        resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
-        for u in usuariasCamp
-    ]
-    created_res = resultadosxcampania.objects.bulk_create(res_list)
+    resultados = []
+    for u in usuariasCamp:
+        resultados.append(resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual))
 
-    for u, res in zip(usuariasCamp, created_res):
+    resultados_creados = resultadosxcampania.objects.bulk_create(resultados)
+
+    for u, res in zip(usuariasCamp, resultados_creados):
         # clientWhatsapp.send_message(whatsapp_Template,"57"+u.contacto.celular,str(res.id))
         newWhatsappClient.send_content_message(
             content_sid,
@@ -196,15 +196,13 @@ def disableTaskxCamp(campID):
     print("Deshabilitanto la campaña")
     print(campID)
     campaign_tasks = CampaignTask.objects.filter(campania=camp)
-    for task_record in campaign_tasks:
-        try:
-            periodic_task = PeriodicTask.objects.get(pk=task_record.periodic_task_id)
-            periodic_task.enabled = False
-            periodic_task.save()
-            periodic_task.delete()
-        except PeriodicTask.DoesNotExist:
-            print(f"PeriodicTask {task_record.periodic_task_id} already deleted.")
+    periodic_task_ids = list(campaign_tasks.values_list('periodic_task_id', flat=True))
     
+    if periodic_task_ids:
+        periodic_tasks = PeriodicTask.objects.filter(pk__in=periodic_task_ids)
+        periodic_tasks.update(enabled=False)
+        periodic_tasks.delete()
+
     campaign_tasks.delete()
     inactiva = estado_campania.objects.get(descripcion=3)
     camp.estado = inactiva

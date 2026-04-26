@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status, exceptions
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
@@ -26,10 +26,6 @@ clientAccount = RestAccount()
 class CampaignViewSet(viewsets.ModelViewSet):
     queryset = Campania.objects.all()
     serializer_class = campaignsSerializer
-
-    def get_queryset(self):
-        # Override if needed, e.g., for filtering by operator
-        return super().get_queryset()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
