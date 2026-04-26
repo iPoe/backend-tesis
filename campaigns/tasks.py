@@ -17,7 +17,6 @@ from .twilioAPI import VoiceCall,SMS,Email,WhatsApp
 
 clientSMS = SMS()
 clientVoice = VoiceCall()
-clientWhatsapp = WhatsApp()
 newWhatsappClient = WhatsApp()
 content_sid = 'HXc7e2769d37df6216c62cfb88d7aed6af'
 
@@ -151,12 +150,8 @@ def enviarWhatsapp(ID,mId):
 
     resultados = []
     for u in usuariasCamp:
-        resultados.append(resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual))
-
-    resultados_creados = resultadosxcampania.objects.bulk_create(resultados)
-
-    for u, res in zip(usuariasCamp, resultados_creados):
-        # clientWhatsapp.send_message(whatsapp_Template,"57"+u.contacto.celular,str(res.id))
+        res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        res.save()
         newWhatsappClient.send_content_message(
             content_sid,
             'MGfc684cdf8bd8a626ecf36c9e976c9055',
