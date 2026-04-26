@@ -182,15 +182,13 @@ def disableTaskxCamp(campID):
     print("Deshabilitanto la campaña")
     print(campID)
     campaign_tasks = CampaignTask.objects.filter(campania=camp)
-    for task_record in campaign_tasks:
-        try:
-            periodic_task = PeriodicTask.objects.get(pk=task_record.periodic_task_id)
-            periodic_task.enabled = False
-            periodic_task.save()
-            periodic_task.delete()
-        except PeriodicTask.DoesNotExist:
-            print(f"PeriodicTask {task_record.periodic_task_id} already deleted.")
+    periodic_task_ids = list(campaign_tasks.values_list('periodic_task_id', flat=True))
     
+    if periodic_task_ids:
+        periodic_tasks = PeriodicTask.objects.filter(pk__in=periodic_task_ids)
+        periodic_tasks.update(enabled=False)
+        periodic_tasks.delete()
+
     campaign_tasks.delete()
     inactiva = estado_campania.objects.get(descripcion=3)
     camp.estado = inactiva
