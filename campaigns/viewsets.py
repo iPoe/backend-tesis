@@ -9,9 +9,8 @@ import datetime as dt
 import traceback
 
 from .models import (
-    Campania, Contacto, Medio, EmailMedio, SMSMedio, WhatsAppMedio, 
-    VoiceMedio, mediosxcampania, Tipo_medio, estado_campania, 
-    resultadosxcampania, Tipo_resultado, CampaignTask
+    Campania, Contacto, Medio, mediosxcampania, estado_campania,
+    resultadosxcampania, CampaignTask, contactosxcampa
 )
 from .serializers import (
     campaignsSerializer, ContactosSerializer, MediaSerializer, 
