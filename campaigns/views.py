@@ -90,9 +90,16 @@ def reply_whatsapp(request):
         if not usuaria:
             return JsonResponse("User not found", status=404)
 
-        campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
         estado_activo = estado_campania.objects.get(descripcion=1)
-        campañas_activas = [c.campania for c in campañas_usuaria if c.campania.estado == estado_activo]
+
+        # ⚡ Bolt Optimization: Use select_related and DB-level filtering to eliminate N+1 queries
+        # Reduces query count from O(N) to O(1) when finding active campaigns for a user
+        campañas_activas = [
+            c.campania for c in contactosxcampa.objects.select_related('campania').filter(
+                contacto=usuaria,
+                campania__estado=estado_activo
+            )
+        ]
 
         if len(campañas_activas) > 0:
             mensaje_body = request.POST.get("Body", "")
