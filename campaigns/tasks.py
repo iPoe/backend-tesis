@@ -148,10 +148,14 @@ def enviarWhatsapp(ID,mId):
     usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID).select_related('contacto'),Campania.objects.get(pk = ID)
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
 
-    resultados = []
-    for u in usuariasCamp:
-        res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
-        res.save()
+    resultados = [
+        resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        for u in usuariasCamp
+    ]
+    # bulk_create returns the objects with IDs populated when using PostgreSQL
+    resultados_creados = resultadosxcampania.objects.bulk_create(resultados)
+
+    for u, res in zip(usuariasCamp, resultados_creados):
         newWhatsappClient.send_content_message(
             content_sid,
             'MGfc684cdf8bd8a626ecf36c9e976c9055',
