@@ -1,0 +1,3 @@
+## 2024-04-29 - DRF many=True ListSerializer N+1 Bottleneck
+**Learning:** In Django Rest Framework, passing `many=True` to a ModelSerializer loops over each item and calls the child serializer's `create` method sequentially by default. In `ContactosSerializer`, this triggered a loop of slow `update_or_create` calls, causing massive N+1 overhead during large bulk inputs. Also, related model fetching inside loops (like `Campania.objects.get()` when creating related tables) compounds N+1 issues.
+**Action:** Always implement a custom `ListSerializer` overriding the `create` method with Django's native `bulk_create` (using `update_conflicts=True` for upsert logic) when processing bulk insertions, and eagerly evaluate related objects outside of the loop.

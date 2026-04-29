@@ -25,8 +25,12 @@ class Camp_setup:
                     campania = self.camp.save()
                     if campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
+                        # ⚡ Bolt Optimization: Pulled Campania.objects.get() outside the loop
+                        # This eliminates N+1 queries when building the list of contactosxcampa.
+                        # Expected Impact: Dramatically reduces query count from O(N) to O(1) for campaign lookup
+                        campania_obj = Campania.objects.get(pk=campania.id)
                         objs = [contactosxcampa(
-                            campania = Campania.objects.get(pk = campania.id),
+                            campania = campania_obj,
                             contacto = contacto,nombreContactos=self.datacamp['nombreContactos'])
                             for contacto in contactos
                         ]
