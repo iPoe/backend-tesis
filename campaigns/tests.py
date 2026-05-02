@@ -152,3 +152,27 @@ class campaignsTests(APITestCase):
         self.assertEqual(camp.fechaFin, datetime.date(2026, 2, 28))
         self.assertEqual(camp.duracion, 5)
         mock_disable.assert_called_once_with(camp.id)
+from django.test import TestCase
+from campaigns.serializers import ContactosSerializer
+from campaigns.models import Contacto
+
+class ContactosPerformanceTest(TestCase):
+    def test_contactos_bulk_create(self):
+        data = [
+            {
+                "identidad": f"12345{i}",
+                "nombre": f"Test {i}",
+                "fecha_nacimiento": "01/01/2000",
+                "celular": "12345678",
+                "telefono": "12345678",
+                "email": f"test{i}@test.com"
+            } for i in range(10)
+        ]
+
+        serializer = ContactosSerializer(data=data, many=True)
+        self.assertTrue(serializer.is_valid())
+
+        with self.assertNumQueries(1): # Only 1 query to bulk insert and update
+            serializer.save()
+
+        self.assertEqual(Contacto.objects.count(), 10)
