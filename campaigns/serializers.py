@@ -48,12 +48,30 @@ class campaignsSerializer(serializers.ModelSerializer):
 
 
 
+class ContactosListSerializer(serializers.ListSerializer):
+	"""
+	ListSerializer to optimize bulk creation of Contacto instances.
+	Replaces individual update_or_create calls with a single bulk_create,
+	preventing N+1 database bottlenecks during bulk insertion.
+	"""
+	def create(self, validated_data):
+		contactos = [Contacto(**item) for item in validated_data]
+		# Use PostgreSQL's native bulk_create with update_conflicts
+		# to handle existing instances efficiently.
+		return Contacto.objects.bulk_create(
+			contactos,
+			update_conflicts=True,
+			unique_fields=['identidad'],
+			update_fields=['nombre', 'celular', 'telefono', 'email', 'fecha_nacimiento']
+		)
+
 class ContactosSerializer(serializers.ModelSerializer):
 	fecha_nacimiento = serializers.DateField(input_formats=['%d/%m/%Y'])
 	nombre = serializers.CharField(max_length=50)
 	class Meta:
 		model = Contacto
 		fields = ['identidad', 'nombre','fecha_nacimiento','celular','email','telefono']
+		list_serializer_class = ContactosListSerializer
 		extra_kwargs = {
             'identidad': {
                 'validators': [],

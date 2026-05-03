@@ -152,3 +152,21 @@ class campaignsTests(APITestCase):
         self.assertEqual(camp.fechaFin, datetime.date(2026, 2, 28))
         self.assertEqual(camp.duracion, 5)
         mock_disable.assert_called_once_with(camp.id)
+
+    def test_bulk_create_contactos(self):
+        from campaigns.serializers import ContactosSerializer
+        data = [
+            {
+                "identidad": f"bulk{i}",
+                "nombre": f"Bulk Contact {i}",
+                "fecha_nacimiento": "01/01/1990",
+                "celular": "3000000000",
+                "email": f"bulk{i}@example.com",
+                "telefono": "1234567"
+            } for i in range(10)
+        ]
+        serializer = ContactosSerializer(data=data, many=True)
+        self.assertTrue(serializer.is_valid())
+        serializer.save()
+
+        self.assertEqual(Contacto.objects.filter(identidad__startswith='bulk').count(), 10)
