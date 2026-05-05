@@ -1,0 +1,3 @@
+## 2024-05-18 - DRF Bulk Inserts N+1 Bottleneck and PostgreSQL bulk_create
+**Learning:** When using Django Rest Framework (DRF) serializers with `many=True` (e.g., `ContactosSerializer(many=True)` during campaign setups), DRF's default behavior iterates through the objects and calls the child serializer's `update_or_create` sequentially. This creates a severe N+1 database performance bottleneck.
+**Action:** Always override `ListSerializer.create` and specify `list_serializer_class = MyListSerializer` in the child serializer's `Meta` when dealing with bulk insertions. Leverage PostgreSQL's native `bulk_create(update_conflicts=True, unique_fields=[...], update_fields=[...])` instead of iterative `update_or_create` calls to achieve significantly faster bulk upserts.
