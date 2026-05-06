@@ -1,0 +1,3 @@
+## 2025-02-28 - Contact Bulk Insertion N+1 Query Optimization
+**Learning:** In Django REST Framework, the default `ListSerializer.create()` iterates over `validated_data` and makes repeated individual database calls (or internal `update_or_create` function calls, each firing a SELECT and an INSERT/UPDATE). This architecture results in a severe N+1 performance bottleneck when an API handles bulk insertions, such as creating numerous contacts sequentially.
+**Action:** Always override `ListSerializer.create()` for bulk operations to utilize PostgreSQL's native `bulk_create` (with `update_conflicts=True` enabled to prevent duplicates on collision fields). This converts an O(N) database time cost to an O(1) batched query, dramatically improving overall endpoint latency.
