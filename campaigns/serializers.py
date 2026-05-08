@@ -48,11 +48,24 @@ class campaignsSerializer(serializers.ModelSerializer):
 
 
 
+class ContactosListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        # Prevent N+1 database performance bottlenecks by using PostgreSQL's native bulk_create
+        # instead of relying on the child serializer's iterative update_or_create calls.
+        contactos = [Contacto(**item) for item in validated_data]
+        return Contacto.objects.bulk_create(
+            contactos,
+            update_conflicts=True,
+            unique_fields=['identidad'],
+            update_fields=['nombre', 'celular', 'telefono', 'email', 'fecha_nacimiento']
+        )
+
 class ContactosSerializer(serializers.ModelSerializer):
 	fecha_nacimiento = serializers.DateField(input_formats=['%d/%m/%Y'])
 	nombre = serializers.CharField(max_length=50)
 	class Meta:
 		model = Contacto
+		list_serializer_class = ContactosListSerializer
 		fields = ['identidad', 'nombre','fecha_nacimiento','celular','email','telefono']
 		extra_kwargs = {
             'identidad': {
