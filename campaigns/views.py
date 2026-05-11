@@ -118,20 +118,36 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from django.db.models import Q
+    from .models import Tipo_resultado, mediosxcampania, resultadosxcampania
+
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    campania_ids = [c.id if hasattr(c, 'id') else c for c in campanias]
+    if not campania_ids:
+        return
+
+    # ⚡ Bolt Optimization: Fetch all related 'mediosxcampania' in a single query
+    # rather than querying inside the loop (N+1 bottleneck).
+    mxc_list = mediosxcampania.objects.filter(
+        campania_id__in=campania_ids,
+        medio_id__tipo_medio__descripcion=5
+    ).values_list('campania_id', 'medio_id')
+
+    if not mxc_list:
+        return
+
+    # Use Q objects to build a single query filtering multiple criteria pairs
+    q_objects = Q()
+    for camp_id, medio_id in mxc_list:
+        q_objects |= Q(campania_id=camp_id, medio_id=medio_id)
+
+    try:
+        resultadosxcampania.objects.filter(
+            q_objects,
+            contacto_cc=usuaria.identidad,
+            fecha=fechaActual
+        ).update(Tipo_resultado=tipo_resultado)
+    except Exception as e:
+        print(f"Error updating result: {e}")
