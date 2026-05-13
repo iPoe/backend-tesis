@@ -1,0 +1,3 @@
+## 2024-05-13 - Eliminate N+1 inserts using ListSerializer.create and bulk_create
+**Learning:** In Django Rest Framework (DRF), when you initialize a serializer with `many=True` (e.g., `ContactosSerializer(data=..., many=True)`), it iterates over the validated data and calls `update_or_create` (or `create`) repeatedly, causing an N+1 queries database bottleneck during bulk inserts.
+**Action:** Always define a custom `ListSerializer` (e.g., `ContactosListSerializer`) and assign it via the Meta's `list_serializer_class`. Inside the custom ListSerializer, override the `create` method to utilize Django's `bulk_create` (with `update_conflicts=True` in PostgreSQL/SQLite) to handle upserts in a single database round-trip.

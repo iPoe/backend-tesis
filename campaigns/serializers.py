@@ -48,11 +48,28 @@ class campaignsSerializer(serializers.ModelSerializer):
 
 
 
+class ContactosListSerializer(serializers.ListSerializer):
+	def create(self, validated_data):
+		contactos = [Contacto(**item) for item in validated_data]
+
+		# ⚡ Bolt: Performance Optimization
+		# Use PostgreSQL's bulk_create with update_conflicts=True to upsert contacts.
+		# This replaces DRF's default behavior which iterates over validated_data
+		# and calls update_or_create on each element, eliminating N+1 DB queries.
+		return Contacto.objects.bulk_create(
+			contactos,
+			update_conflicts=True,
+			unique_fields=['identidad'],
+			update_fields=['nombre', 'celular', 'telefono', 'email', 'fecha_nacimiento']
+		)
+
+
 class ContactosSerializer(serializers.ModelSerializer):
 	fecha_nacimiento = serializers.DateField(input_formats=['%d/%m/%Y'])
 	nombre = serializers.CharField(max_length=50)
 	class Meta:
 		model = Contacto
+		list_serializer_class = ContactosListSerializer
 		fields = ['identidad', 'nombre','fecha_nacimiento','celular','email','telefono']
 		extra_kwargs = {
             'identidad': {
