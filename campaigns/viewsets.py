@@ -133,10 +133,19 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 contacantiguo = resultados[0]['contacto_cc']
                 dicresxmed = {}
                 i = 1
+
+                # OPTIMIZATION: Fetch all contacts in a single query to prevent N+1
+                contact_ids = set(r['contacto_cc'] for r in resultados)
+                contactos = Contacto.objects.filter(identidad__in=contact_ids)
+                contactos_dict = {
+                    c['identidad']: c
+                    for c in ContactosSerializer(contactos, many=True).data
+                }
+
                 for res in resultados:
                     if res['contacto_cc'] != contacantiguo:
-                        contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
-                        dicfinal = {**contSer.data, **dicresxmed}
+                        cont_data = contactos_dict.get(contacantiguo, {})
+                        dicfinal = {**cont_data, **dicresxmed}
                         listausers.append(dicfinal)
                         dicresxmed, i = {}, 1
                     
@@ -149,8 +158,8 @@ class CampaignViewSet(viewsets.ModelViewSet):
                     contacantiguo = res['contacto_cc']
                     i += 1
 
-                contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
-                dicfinal = {**contSer.data, **dicresxmed}
+                cont_data = contactos_dict.get(contacantiguo, {})
+                dicfinal = {**cont_data, **dicresxmed}
                 listausers.append(dicfinal)
                 dataest['estadistica'] = listausers
             else:
