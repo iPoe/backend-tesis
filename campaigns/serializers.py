@@ -48,10 +48,25 @@ class campaignsSerializer(serializers.ModelSerializer):
 
 
 
+class ContactosListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        contactos_to_create = [
+            Contacto(**item) for item in validated_data
+        ]
+        # Bolt performance optimization: use bulk_create to avoid N+1 update_or_create queries
+        return Contacto.objects.bulk_create(
+            contactos_to_create,
+            update_conflicts=True,
+            unique_fields=['identidad'],
+            update_fields=['nombre', 'fecha_nacimiento', 'celular', 'email', 'telefono']
+        )
+
+
 class ContactosSerializer(serializers.ModelSerializer):
 	fecha_nacimiento = serializers.DateField(input_formats=['%d/%m/%Y'])
 	nombre = serializers.CharField(max_length=50)
 	class Meta:
+		list_serializer_class = ContactosListSerializer
 		model = Contacto
 		fields = ['identidad', 'nombre','fecha_nacimiento','celular','email','telefono']
 		extra_kwargs = {
