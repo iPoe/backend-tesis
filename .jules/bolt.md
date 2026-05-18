@@ -1,0 +1,3 @@
+## 2024-05-18 - DRF Bulk Insertion N+1 Query Bottleneck
+**Learning:** By default, initializing a Django Rest Framework Serializer with `many=True` and calling `.save()` falls back to repeatedly calling `.create()` or `.update()` on the underlying child serializer in a loop. For lists of items, this triggers an N+1 database query behavior (e.g., iterative `update_or_create` calls), which becomes a severe bottleneck for large bulk inserts.
+**Action:** When bulk inserting objects via DRF, explicitly override the `ListSerializer`'s `create` method and use PostgreSQL's native `bulk_create` (with `update_conflicts=True` to act as an upsert, matching the behavior of `update_or_create`).
