@@ -1,0 +1,3 @@
+## 2024-05-24 - N+1 Query Bottleneck on Nested Serializers in Django REST Framework
+**Learning:** In Django DRF, calling nested serializers inside a loop using a query like `.filter(foreign_key=x['id'])` creates an N+1 query bottleneck. Also, if a nested serializer accesses related fields (like `medio_id.tipo_medio`), it will trigger additional N queries per row if not properly prefetched.
+**Action:** When serializing lists with nested related data, fetch the parent records, extract all IDs, perform a single `Model.objects.filter(fk__in=ids).select_related('related__fields')` to prefetch nested relationships, group them by the foreign key using `collections.defaultdict(list)`, and assign the lists inside the loop. This changes O(N) database operations into O(1).
