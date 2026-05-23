@@ -1,0 +1,3 @@
+## 2024-05-18 - Avoid N+1 queries in DRF serialization loops
+**Learning:** In Django REST Framework (DRF), iterating over a queryset to fetch related models inside a `for x in data:` loop (e.g., in a `list` or `retrieve` viewset method) causes a severe N+1 database query bottleneck, especially when child serializers map nested models.
+**Action:** When overriding `list` or iterating over serialized data, bulk fetch the related records before the loop using `.filter(parent_id__in=ids)` alongside `.select_related()` for any nested foreign keys the child serializer accesses, and group them into an O(1) lookup dictionary like `collections.defaultdict(list)`.
