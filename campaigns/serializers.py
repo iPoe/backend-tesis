@@ -48,11 +48,29 @@ class campaignsSerializer(serializers.ModelSerializer):
 
 
 
+class ContactosListSerializer(serializers.ListSerializer):
+	def create(self, validated_data):
+		# ⚡ Bolt Performance Optimization:
+		# Use native bulk_create instead of iterating and saving one by one.
+		# This avoids the N+1 query problem, dropping DB operations for a
+		# large batch (e.g., 500 records) from thousands of queries down to
+		# a single query, significantly speeding up bulk import workflows.
+		# update_conflicts=True maintains the update_or_create logic.
+		contactos = [Contacto(**item) for item in validated_data]
+		return Contacto.objects.bulk_create(
+			contactos,
+			update_conflicts=True,
+			unique_fields=['identidad'],
+			update_fields=['nombre', 'celular', 'telefono', 'email', 'fecha_nacimiento']
+		)
+
+
 class ContactosSerializer(serializers.ModelSerializer):
 	fecha_nacimiento = serializers.DateField(input_formats=['%d/%m/%Y'])
 	nombre = serializers.CharField(max_length=50)
 	class Meta:
 		model = Contacto
+		list_serializer_class = ContactosListSerializer
 		fields = ['identidad', 'nombre','fecha_nacimiento','celular','email','telefono']
 		extra_kwargs = {
             'identidad': {
