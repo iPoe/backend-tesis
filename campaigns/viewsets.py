@@ -12,6 +12,7 @@ from .models import (
     Campania, Contacto, Medio, mediosxcampania, estado_campania,
     resultadosxcampania, CampaignTask, contactosxcampa
 )
+from collections import defaultdict
 from .serializers import (
     campaignsSerializer, ContactosSerializer, MediaSerializer, 
     contactosxcampSerializer
@@ -30,10 +31,25 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
+
+        # O(1) optimization: Batch fetch related objects and group them in memory
+        # to avoid N+1 queries. We also select_related to avoid queries in the serializer.
+        campania_ids = [x['id'] for x in data]
+        all_mxc = mediosxcampania.objects.filter(
+            campania_id__in=campania_ids
+        ).select_related('medio_id__tipo_medio')
+
+        mxc_by_campania = defaultdict(list)
+        for mxc in all_mxc:
+            mxc_by_campania[mxc.campania_id_id].append(mxc)
+
         for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
             x.pop('operador_ID', None)
             x.pop('Fecha_Creada', None)
+
+            # Fetch from our pre-computed in-memory dictionary
+            mxc = mxc_by_campania.get(x['id'], [])
+
             medioSerializer = contactosxcampSerializer(mxc, many=True)
             x['medios'] = medioSerializer.data
         return Response(data)
