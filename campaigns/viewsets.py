@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from datetime import date
 import datetime as dt
 import traceback
+from collections import defaultdict
 
 from .models import (
     Campania, Contacto, Medio, mediosxcampania, estado_campania,
@@ -30,12 +31,31 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
+
+        # Collect all campaign IDs
+        camp_ids = [x['id'] for x in data]
+
+        # Batch fetch all related mediosxcampania using a single query
+        # select_related avoids N+1 queries from the serializer's source='medio_id.tipo_medio'
+        mxc_qs = mediosxcampania.objects.filter(
+            campania_id__in=camp_ids
+        ).select_related('medio_id__tipo_medio')
+
+        # Group by campania_id locally
+        mxc_grouped = defaultdict(list)
+        for m in mxc_qs:
+            # We use campania_id_id to avoid an extra DB fetch for the related Campania instance
+            mxc_grouped[m.campania_id_id].append(m)
+
         for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
             x.pop('operador_ID', None)
             x.pop('Fecha_Creada', None)
+
+            # Retrieve the grouped list from our dictionary (O(1) lookup)
+            mxc = mxc_grouped.get(x['id'], [])
             medioSerializer = contactosxcampSerializer(mxc, many=True)
             x['medios'] = medioSerializer.data
+
         return Response(data)
 
     def create(self, request, *args, **kwargs):
