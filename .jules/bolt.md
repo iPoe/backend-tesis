@@ -1,0 +1,3 @@
+## 2024-05-31 - [Bulk Insert Optimization for Serializers]
+**Learning:** In Django Rest Framework, validating and saving lists of objects (using `many=True`) internally triggers iterative single-object `save()` calls (such as N individual `update_or_create` calls), which leads to a severe N+1 database performance bottleneck on mass imports.
+**Action:** Always override `ListSerializer.create` when dealing with bulk insertions (`many=True`). Instantiate the Django models using dictionary unpacking (e.g., `Contacto(**item)`) and execute PostgreSQL's native `bulk_create(update_conflicts=True)` with the appropriate `unique_fields` and `update_fields` to act as an upsert, which batches DB operations and dramatically improves performance.
