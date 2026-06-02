@@ -1,0 +1,3 @@
+## 2024-06-02 - Resolving N+1 on Contact Import
+**Learning:** The existing code for inserting multiple contacts during campaign creation iterates over the deserialized list, executing an `update_or_create` on every entry. This triggers an N+1 condition when large lists of contacts are submitted via the `ContactosSerializer`.
+**Action:** Overriding the `create` method of the DRF `ListSerializer` class applied dynamically to the ModelSerializer allows substituting iterative calls with a single bulk native PostgreSQL `bulk_create` call with `update_conflicts=True`, matching exact logic of upserting but reducing latency exponentially.

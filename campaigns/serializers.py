@@ -48,6 +48,17 @@ class campaignsSerializer(serializers.ModelSerializer):
 
 
 
+class ContactosListSerializer(serializers.ListSerializer):
+	def create(self, validated_data):
+		contactos = [Contacto(**item) for item in validated_data]
+		# Using PostgreSQL bulk_create to resolve N+1 during contact import
+		return Contacto.objects.bulk_create(
+			contactos,
+			update_conflicts=True,
+			unique_fields=['identidad'],
+			update_fields=['nombre', 'celular', 'telefono', 'email', 'fecha_nacimiento']
+		)
+
 class ContactosSerializer(serializers.ModelSerializer):
 	fecha_nacimiento = serializers.DateField(input_formats=['%d/%m/%Y'])
 	nombre = serializers.CharField(max_length=50)
@@ -59,6 +70,7 @@ class ContactosSerializer(serializers.ModelSerializer):
                 'validators': [],
             }
         }
+		list_serializer_class = ContactosListSerializer
 
 	def create(self,validated_data):
 		contacto, created = Contacto.objects.update_or_create(identidad=validated_data['identidad'],
