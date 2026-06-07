@@ -1,0 +1,3 @@
+## 2024-06-07 - Fix N+1 Query on Bulk Contactos Insertion
+**Learning:** In Django Rest Framework, bulk insertion using `many=True` via `ContactosSerializer` triggers N+1 queries due to its child serializer's `update_or_create` iterative call for each item, slowing down the database transactions and operations massively.
+**Action:** Always utilize a custom ListSerializer, like `ContactosListSerializer`, to override the `create` logic with PostgreSQL's native `bulk_create` along with `update_conflicts=True` to significantly minimize database queries to a fraction during mass insertions while avoiding duplicate constraint errors.
