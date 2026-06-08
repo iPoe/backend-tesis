@@ -1,0 +1,3 @@
+## 2025-02-28 - DRF bulk insertion N+1 Queries
+**Learning:** When performing bulk insertions in DRF (e.g., using `ContactosSerializer(data=..., many=True)`), if the serializer has a custom `create` method using `update_or_create`, DRF iteratively calls it for each item, leading to severe N+1 database performance bottlenecks (e.g., ~60 queries for 10 items).
+**Action:** Create a custom `ListSerializer` and override its `create` method. Use PostgreSQL's native `bulk_create(update_conflicts=True)` inside the `ListSerializer` to convert the operation into a single upsert query, drastically reducing database overhead (e.g., down to ~3 queries). Assign this custom list serializer to the model serializer's `Meta.list_serializer_class`.
