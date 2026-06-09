@@ -130,12 +130,21 @@ class CampaignViewSet(viewsets.ModelViewSet):
 
             if len(resultados) > 0:
                 listausers = []
+
+                # Bolt: Pre-fetch all Contacto instances to prevent N+1 queries in the loop
+                contact_ids = set(res['contacto_cc'] for res in resultados)
+                contacts_dict = {c.identidad: c for c in Contacto.objects.filter(identidad__in=contact_ids)}
+
+                # Bolt: Move static dictionary definition outside the loop to save redundant allocation
+                dic_resultados = {1: "1", 2: "5", 6: "3", 4: "2", 5: "4", 3: "1", 9: "Si", 10: "No"}
+
                 contacantiguo = resultados[0]['contacto_cc']
                 dicresxmed = {}
                 i = 1
                 for res in resultados:
                     if res['contacto_cc'] != contacantiguo:
-                        contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                        # O(1) lookup instead of a database query per user
+                        contSer = ContactosSerializer(contacts_dict[contacantiguo])
                         dicfinal = {**contSer.data, **dicresxmed}
                         listausers.append(dicfinal)
                         dicresxmed, i = {}, 1
@@ -143,13 +152,12 @@ class CampaignViewSet(viewsets.ModelViewSet):
                     strMedio = f"medio_{i}"
                     tipo_resultado = res['Tipo_resultado']
                     # Map from DB values to display values if needed
-                    dic_resultados = {1: "1", 2: "5", 6: "3", 4: "2", 5: "4", 3: "1", 9: "Si", 10: "No"}
                     dicresxmed[strMedio] = dic_resultados.get(tipo_resultado, str(tipo_resultado))
                     
                     contacantiguo = res['contacto_cc']
                     i += 1
 
-                contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                contSer = ContactosSerializer(contacts_dict[contacantiguo])
                 dicfinal = {**contSer.data, **dicresxmed}
                 listausers.append(dicfinal)
                 dataest['estadistica'] = listausers
