@@ -1,0 +1,3 @@
+## 2026-02-20 - Bulk Create Optimization in DRF
+**Learning:** In Django REST Framework, when performing bulk creations (e.g. `many=True`), relying on the default iteration of the child serializer's `update_or_create` inside the `ListSerializer.create` can lead to severe N+1 database bottlenecks. Since PostgreSQL natively supports UPSERT-like operations and returning primary keys, this can be drastically optimized.
+**Action:** When dealing with bulk insert operations in Django and DRF, override `ListSerializer.create` and replace iterative updates with a single `bulk_create(update_conflicts=True)` call. Ensure `unique_fields` and `update_fields` are explicitly set to manage database-level conflicts, reducing DB queries from O(N) to O(1).
