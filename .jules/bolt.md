@@ -1,0 +1,3 @@
+## 2024-06-14 - Fix Django Rest Framework N+1 queries during many=True object creation
+**Learning:** By default, when creating objects in bulk via DRF's `ListSerializer` (using `many=True`), DRF loops over the items and calls the child serializer's `create()` method. When the child uses `update_or_create()`, this creates an N+1 database bottleneck during array insertion.
+**Action:** Always verify if a serializer is used for bulk operations. If so, create a custom `ListSerializer` that overrides `create()` to use Django 4.1+'s native `bulk_create` with `update_conflicts=True`, and associate it using `list_serializer_class` in the Meta class. This bypasses the N+1 loop efficiently.
