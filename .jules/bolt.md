@@ -1,0 +1,3 @@
+## 2024-06-15 - Django Bulk Creation with update_conflicts
+**Learning:** When using Django REST Framework to save multiple models at once via a serializer initialized with `many=True` (e.g., `ContactosSerializer`), overriding `ListSerializer.create` to use PostgreSQL's native `bulk_create` with `update_conflicts=True` provides an enormous performance boost. The default DRF behavior is to iteratively call the child's `create` method, which results in N+1 queries (or in this case, 600 queries for 100 items when using `update_or_create`).
+**Action:** When a serializer is expected to handle bulk data insertion (e.g., `many=True`), use a custom `ListSerializer` and `bulk_create` instead of standard iterative saving.
