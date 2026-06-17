@@ -1,0 +1,3 @@
+## 2024-06-17 - Resolving Django N+1 query problems in DRF serializers
+**Learning:** When a DRF ViewSet loop performs database queries (like `mediosxcampania.objects.filter(campania_id=x['id'])`) for each serialized item, it leads to massive N+1 performance bottlenecks. Additionally, when DRF serializers use deep related field sources (like `source='medio_id.tipo_medio'` in `contactosxcampSerializer`), failing to use `select_related` causes secondary N+1 queries.
+**Action:** Extract the IDs of all objects in the serialized data list, use `filter(campania_id__in=ids).select_related(...)` to bulk fetch all related records in a single query, and construct an in-memory mapping using `collections.defaultdict(list)` for O(1) lookups during the serialization loop.
