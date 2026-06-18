@@ -1,0 +1,3 @@
+## 2024-06-18 - [DRF Bulk Insert N+1 Issue]
+**Learning:** Django Rest Framework's default behavior for saving a `ListSerializer` calls `.save()` (and thus `.create()`/`.update()`) iteratively for every object. In `ContactosSerializer`, this leads to an N+1 query issue, with `update_or_create` being called repeatedly (2 queries per object: a SELECT and an INSERT/UPDATE).
+**Action:** Override `ListSerializer.create` when dealing with bulk insertions (like `ContactosSerializer` initialized with `many=True`). Use PostgreSQL's native `bulk_create(update_conflicts=True)` with unique fields instead of relying on the child serializer's iterative `update_or_create` calls to prevent severe database performance bottlenecks.
