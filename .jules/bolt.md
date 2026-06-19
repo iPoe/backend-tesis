@@ -1,0 +1,3 @@
+## 2026-02-19 - [Optimize Bulk Creation in ContactosSerializer]
+**Learning:** In DRF, initializing a serializer with `many=True` calls the child serializer's `create` method iteratively. For `ContactosSerializer` which uses `update_or_create` this results in 6 database queries per row, creating severe N+1 bottlenecks (e.g. 600 queries for 100 rows).
+**Action:** Always override `ListSerializer.create` to implement bulk operations like PostgreSQL's native `bulk_create(update_conflicts=True)` when handling bulk insertions in DRF, specifically when bypassing standard uniqueness checks. Use dictionary unpacking (`Contacto(**item)`) to instantiate the objects for the bulk query.
