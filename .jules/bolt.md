@@ -1,0 +1,3 @@
+## 2025-02-28 - N+1 Query in DRF List Serializations
+**Learning:** When dealing with DRF list serializations, accessing related models within a loop (e.g. iterating over `data` to query related `mediosxcampania` instances for each campaign) causes N+1 queries. Even worse, if nested fields are serialized (e.g., `medio_id.tipo_medio`), it causes secondary N+1 queries.
+**Action:** When fixing N+1 queries over serialized lists, use a bulk query `filter(id__in=ids)` before the loop, and chain `.select_related()` for nested fields accessed in the serializer. Group instances using an in-memory dictionary like `collections.defaultdict` for O(1) lookups during the loop.
