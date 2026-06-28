@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import exceptions, status
 from django.db import transaction
+from django.db.models import Q
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .utils import generate_access_token, generate_refresh_token
 from django.contrib.auth.hashers import check_password
@@ -121,17 +122,31 @@ def _cambiar_estado_bulk(campanias, usuaria, resultado):
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
+    from .models import mediosxcampania
+    campanias_ids = [c.id if hasattr(c, 'id') else c for c in campanias]
+
+    # Bulk fetch media for all active campaigns
+    mxcs = mediosxcampania.objects.filter(
+        campania_id__in=campanias_ids,
+        medio_id__tipo_medio__descripcion=5
+    ).select_related('medio_id')
+
+    if not mxcs:
+        return
+
+    q_objects = Q()
+    for mxc in mxcs:
+        q_objects |= Q(
+            campania_id=mxc.campania_id_id,
+            medio_id=mxc.medio_id_id
+        )
+
+    if q_objects:
         try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
+            resultadosxcampania.objects.filter(
+                q_objects,
+                contacto_cc=usuaria.identidad,
+                fecha=fechaActual
+            ).update(Tipo_resultado=tipo_resultado)
         except Exception as e:
             print(f"Error updating result: {e}")
