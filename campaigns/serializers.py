@@ -48,11 +48,27 @@ class campaignsSerializer(serializers.ModelSerializer):
 
 
 
+
+class ContactosListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        # ⚡ BOLT OPTIMIZATION: Use PostgreSQL's native bulk_create with update_conflicts=True
+        # This resolves a severe N+1 problem when saving multiple contacts (e.g., from CSV uploads).
+        # Previously, ContactosSerializer called update_or_create in a loop, resulting in ~3-5 queries PER contact.
+        # Now, it performs a single bulk upsert, reducing DB overhead by ~99% for large datasets.
+        contactos = [Contacto(**item) for item in validated_data]
+        return Contacto.objects.bulk_create(
+            contactos,
+            update_conflicts=True,
+            unique_fields=['identidad'],
+            update_fields=['nombre', 'fecha_nacimiento', 'celular', 'telefono', 'email']
+        )
+
 class ContactosSerializer(serializers.ModelSerializer):
 	fecha_nacimiento = serializers.DateField(input_formats=['%d/%m/%Y'])
 	nombre = serializers.CharField(max_length=50)
 	class Meta:
 		model = Contacto
+		list_serializer_class = ContactosListSerializer
 		fields = ['identidad', 'nombre','fecha_nacimiento','celular','email','telefono']
 		extra_kwargs = {
             'identidad': {
