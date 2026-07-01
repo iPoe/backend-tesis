@@ -1,0 +1,3 @@
+## 2024-05-18 - Avoid N+1 Query in Serializer loop by caching instances in-memory via .in_bulk()
+**Learning:** In DRF viewsets, particularly `CampaignViewSet.statistics`, there was an N+1 bottleneck when iterating over rows and calling `.get()` for related models (like `Contacto`). This degrades performance significantly as N increases.
+**Action:** Used `Contacto.objects.in_bulk(id_list, field_name='identidad')` before the loop to cache the instances in a dictionary. Replaced `.get()` with dictionary lookups `.get()` to achieve O(1) in-memory fetching. Included `if contacto:` check to safely avoid exceptions when a dict lookup misses.
