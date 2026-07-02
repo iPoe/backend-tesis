@@ -1,0 +1,3 @@
+## 2024-05-24 - Fix N+1 Query in CampaignViewSet list()
+**Learning:** Returning serialized nested properties inside a list endpoint with `mxc = mediosxcampania.objects.filter(campania_id=x['id'])` triggers massive N+1 issues (both DB round-trips for the campaign filtering and implicitly for `medio_id.tipo_medio` accessed inside `contactosxcampSerializer`).
+**Action:** Use `.filter(campania_id__in=ids).select_related('medio_id__tipo_medio')` before the loop and build a `defaultdict(list)` grouped by `campania_id` in Python to allow O(1) in-memory lookups instead of repeating DB queries inside the list serializer.
