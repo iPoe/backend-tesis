@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import exceptions, status
 from django.db import transaction
+from django.db.models import Q
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .utils import generate_access_token, generate_refresh_token
 from django.contrib.auth.hashers import check_password
@@ -117,21 +118,49 @@ def reply_whatsapp(request):
         return JsonResponse({"error": str(e)}, status=400)
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
+    '''
+    ⚡ Bolt Optimization:
+    Eliminated O(n) queries in loop by bulk-fetching mediosxcampania relations and
+    executing a single bulk `.update()` using dynamically constructed Q objects.
+    '''
     from datetime import date
+    from .models import mediosxcampania
+
+    if not campanias:
+        return
+
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    try:
+        # We need the first matching media for each campaign just like the original code.
+        # So we create a mapping from campaign to its first medio.
+        mxcs_qs = mediosxcampania.objects.filter(
+            campania_id__in=campanias,
+            medio_id__tipo_medio__descripcion=5
+        ).values_list('campania_id_id', 'medio_id_id').order_by('id')
+
+        # Keep only the first entry per campaign_id
+        camp_to_first_medio = {}
+        for camp_id, medio_id in mxcs_qs:
+            if camp_id not in camp_to_first_medio:
+                camp_to_first_medio[camp_id] = medio_id
+
+        if not camp_to_first_medio:
+            return
+
+        # Dynamically build condition for mass update using the correct foreign key _id attributes
+        q_objects = Q()
+        for camp_id, medio_id in camp_to_first_medio.items():
+            q_objects |= Q(campania_id_id=camp_id, medio_id_id=medio_id)
+
+        # Apply update in a single query (avoiding N+1 updates).
+        # contacto_cc is actually a ForeignKey in the model, so _id is valid.
+        if q_objects:
+            resultadosxcampania.objects.filter(
+                q_objects,
+                contacto_cc_id=usuaria.identidad,
+                fecha=fechaActual
+            ).update(Tipo_resultado=tipo_resultado)
+    except Exception as e:
+        print(f"Error updating result: {e}")
