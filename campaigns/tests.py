@@ -2,11 +2,11 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
-from .models import (
+from campaigns.models import (
     Campania, Contacto, Medio, EmailMedio, SMSMedio, WhatsAppMedio, 
     VoiceMedio, estado_campania, Operador, Tipo_medio, CampaignTask
 )
-from .utils import generate_access_token
+from campaigns.utils import generate_access_token
 import datetime
 from unittest.mock import patch
 

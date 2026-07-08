@@ -133,9 +133,15 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 contacantiguo = resultados[0]['contacto_cc']
                 dicresxmed = {}
                 i = 1
+
+                # Fetch all relevant contacts in bulk to avoid N+1 query problem
+                contacto_ids = list(set(r['contacto_cc'] for r in resultados))
+                contactos_dict = {c.identidad: c for c in Contacto.objects.filter(identidad__in=contacto_ids)}
+
                 for res in resultados:
                     if res['contacto_cc'] != contacantiguo:
-                        contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                        contacto = contactos_dict.get(contacantiguo)
+                        contSer = ContactosSerializer(contacto)
                         dicfinal = {**contSer.data, **dicresxmed}
                         listausers.append(dicfinal)
                         dicresxmed, i = {}, 1
@@ -149,7 +155,8 @@ class CampaignViewSet(viewsets.ModelViewSet):
                     contacantiguo = res['contacto_cc']
                     i += 1
 
-                contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                contacto = contactos_dict.get(contacantiguo)
+                contSer = ContactosSerializer(contacto)
                 dicfinal = {**contSer.data, **dicresxmed}
                 listausers.append(dicfinal)
                 dataest['estadistica'] = listausers
@@ -165,7 +172,7 @@ class CampaignViewSet(viewsets.ModelViewSet):
         if users.exists():
             data['nombreContactos'] = users[0].nombreContactos
         
-        mxc = mediosxcampania.objects.filter(campania_id=instance)
+        mxc = mediosxcampania.objects.filter(campania_id=instance).select_related('medio_id__tipo_medio', 'medio_id__smsmedio', 'medio_id__whatsappmedio')
         lista_medios = []
         for m in mxc:
             dicMedio = {
