@@ -1,0 +1,3 @@
+## 2024-06-25 - Prevent N+1 queries in DRF bulk insertions
+**Learning:** DRF's default behavior for bulk insertions (e.g., `many=True` in serializers) calls `update_or_create` iteratively for each item, which can lead to severe N+1 database performance bottlenecks. However, `update_conflicts=True` works exceptionally well for upserts when PostgreSQL is used.
+**Action:** Override `ListSerializer.create` to use PostgreSQL's native `bulk_create(update_conflicts=True)` with the appropriate `unique_fields` instead of iterative updates. Instantiate Django models using dictionary unpacking (`Model(**item)`) to guarantee all fields are appropriately initialized before saving.
