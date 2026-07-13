@@ -130,12 +130,19 @@ class CampaignViewSet(viewsets.ModelViewSet):
 
             if len(resultados) > 0:
                 listausers = []
+                # Fetch all related contacts in a single query to fix N+1 issue
+                contacto_ids = {res['contacto_cc'] for res in resultados}
+                contactos_in_bulk = Contacto.objects.in_bulk(list(contacto_ids), field_name='identidad')
+
                 contacantiguo = resultados[0]['contacto_cc']
                 dicresxmed = {}
                 i = 1
                 for res in resultados:
                     if res['contacto_cc'] != contacantiguo:
-                        contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                        contacto = contactos_in_bulk.get(contacantiguo)
+                        if not contacto:
+                            raise Contacto.DoesNotExist(f"Contacto matching query does not exist.")
+                        contSer = ContactosSerializer(contacto)
                         dicfinal = {**contSer.data, **dicresxmed}
                         listausers.append(dicfinal)
                         dicresxmed, i = {}, 1
@@ -149,7 +156,10 @@ class CampaignViewSet(viewsets.ModelViewSet):
                     contacantiguo = res['contacto_cc']
                     i += 1
 
-                contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                contacto = contactos_in_bulk.get(contacantiguo)
+                if not contacto:
+                    raise Contacto.DoesNotExist(f"Contacto matching query does not exist.")
+                contSer = ContactosSerializer(contacto)
                 dicfinal = {**contSer.data, **dicresxmed}
                 listausers.append(dicfinal)
                 dataest['estadistica'] = listausers
