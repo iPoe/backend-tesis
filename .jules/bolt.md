@@ -1,0 +1,3 @@
+## 2025-02-28 - Django Q Objects for Bulk Updating with Disparate Criteria
+**Learning:** In Django, executing `filter().update()` in a loop creates an N+1 query pattern on the database. When updating records based on multiple combinations of criteria (e.g., pairs of `campania_id` and `medio_id`), you can avoid this loop by combining `Q` objects with the bitwise OR operator (`|=`) and applying it to a single `filter().update()` call.
+**Action:** When I encounter loops performing `.update()` on records that share a common field (like `contacto_cc` or `fecha`) but differ on specific compound conditions, I will construct `Q` objects iteratively and issue a single bulk `.update()` query, always checking if the list is empty first to avoid unintentional full-table updates.
