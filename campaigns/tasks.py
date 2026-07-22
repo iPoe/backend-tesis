@@ -148,10 +148,16 @@ def enviarWhatsapp(ID,mId):
     usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID).select_related('contacto'),Campania.objects.get(pk = ID)
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
 
-    resultados = []
-    for u in usuariasCamp:
-        res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
-        res.save()
+    # BOLT OPTIMIZATION: Replaced N+1 `.save()` inside loop with single `bulk_create`
+    # Expected Impact: Reduces database insert queries from O(N) to O(1).
+    res_list = [
+        resultadosxcampania(contacto_cc=u.contacto, campania_id=camp, medio_id=m, fecha=fechaActual)
+        for u in usuariasCamp
+    ]
+    created_res = resultadosxcampania.objects.bulk_create(res_list)
+
+    # Zip original users with created results to utilize the newly returned IDs
+    for u, res in zip(usuariasCamp, created_res):
         newWhatsappClient.send_content_message(
             content_sid,
             'MGfc684cdf8bd8a626ecf36c9e976c9055',

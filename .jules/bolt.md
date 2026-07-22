@@ -1,0 +1,3 @@
+## 2024-05-24 - PostgreSQL bulk_create Returns Primary Keys
+**Learning:** In Django with PostgreSQL, `bulk_create` natively returns primary keys. This means you can replace N+1 `.save()` calls inside loops with a single `bulk_create`, and then `zip()` the resulting records with the original list to immediately use the generated IDs for subsequent tasks (like sending WhatsApp messages or triggering external APIs), without needing an extra `.filter()` query to fetch the IDs.
+**Action:** Always prefer `bulk_create` over `.save()` loops for inserts. In PostgreSQL environments, directly use the returned objects from `bulk_create` for any downstream tasks that require the newly inserted primary keys.
