@@ -145,13 +145,17 @@ def send_mailgun_message(from_, to, subject, text, tag=None, track=True):
     send_message_via_smtp(from_, to, msg.as_string())
 
 def enviarWhatsapp(ID,mId):
-    usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID).select_related('contacto'),Campania.objects.get(pk = ID)
+    usuariasCamp = list(contactosxcampa.objects.filter(campania = ID).select_related('contacto'))
+    camp = Campania.objects.get(pk = ID)
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
 
-    resultados = []
-    for u in usuariasCamp:
-        res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
-        res.save()
+    res_list = [
+        resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        for u in usuariasCamp
+    ]
+    created_res = resultadosxcampania.objects.bulk_create(res_list)
+
+    for res, u in zip(created_res, usuariasCamp):
         newWhatsappClient.send_content_message(
             content_sid,
             'MGfc684cdf8bd8a626ecf36c9e976c9055',
