@@ -1,0 +1,3 @@
+## 2024-07-23 - Bulk Create Optimization for API Triggers
+**Learning:** In Django, when iterating over models to save and immediately use their generated IDs for external API calls, calling `.save()` in a loop causes an N+1 query problem. `bulk_create` on PostgreSQL natively returns populated IDs, which can be paired with `zip()` against the original list of users to trigger external API calls efficiently.
+**Action:** Always prefer `bulk_create` for mass insertions even if the new IDs are needed immediately for subsequent operations, provided the database supports returning IDs on bulk inserts.
