@@ -1,0 +1,3 @@
+## 2026-04-26 - Django REST Framework Serializer Loop N+1 Query
+**Learning:** In DRF viewsets, modifying data within a loop after serialization (e.g., in the `list` method) often causes N+1 query problems. When iterating over a serialized queryset to append related objects, executing a `.filter()` query inside the loop generates a database request for each item.
+**Action:** Always fetch related data before the loop. Use `id_list = [x['id'] for x in data]`, perform a single `.filter(related_id__in=id_list)` call chained with `.select_related()` or `.prefetch_related()`, and group the results in memory using `collections.defaultdict` for O(1) lookup during the loop.
