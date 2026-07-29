@@ -1,0 +1,34 @@
+--- campaigns/tasks.py
++++ campaigns/tasks.py
+@@ -52,10 +52,11 @@
+         CampaignTask.objects.create(campania=cam, periodic_task_id=periodic_task.id, medio=m)
+
+ def llamar_usuarias(ID, mId, tel=''):
+-    cons = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
++    # ⚡ Bolt: Add select_related to fix N+1 queries when accessing obj.contacto
++    cons = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
+     m = Medio.objects.get(pk=mId)
+     fechaActual = date.today()
+     camp = Campania.objects.get(pk=ID)
+
+     resultados = [
+@@ -87,7 +88,8 @@
+         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
+
+ def envMensajeUsuarias(ID,mId):
+-    cons = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
++    # ⚡ Bolt: Add select_related to fix N+1 queries when accessing obj.contacto.celular
++    cons = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
+     m,fechaActual = Medio.objects.get(pk=mId),date.today()
+     m_sms = m.smsmedio
+     txt = m_sms.mensaje
+@@ -105,7 +107,8 @@
+         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
+
+ def enviar_correos(ID,mId):
+-    usuariasCamp = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
++    # ⚡ Bolt: Add select_related to fix N+1 queries when accessing usuaria.contacto.email
++    usuariasCamp = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
+     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
+     m = Medio.objects.get(pk=mId)
+     camp = Campania.objects.get(pk = ID)
