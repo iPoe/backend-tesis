@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import exceptions, status
 from django.db import transaction
+from django.db.models import Q
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .utils import generate_access_token, generate_refresh_token
 from django.contrib.auth.hashers import check_password
@@ -118,20 +119,31 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from .models import mediosxcampania
+
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    try:
+        # ⚡ Bolt Optimization: Bulk fetch all relevant WhatsApp medias to avoid N+1 queries in a loop
+        mxcs = mediosxcampania.objects.filter(
+            campania_id__in=campanias,
+            medio_id__tipo_medio__descripcion=5
+        ).values_list('campania_id', 'medio_id')
+
+        if not mxcs:
+            return
+
+        # Build Q object for mass update to combine conditions for all campaign/media pairs
+        q_objects = Q()
+        for camp_id, medio_id in mxcs:
+            q_objects |= Q(
+                campania_id=camp_id,
+                medio_id=medio_id
+            )
+
+        q_objects &= Q(contacto_cc=usuaria.identidad, fecha=fechaActual)
+
+        resultadosxcampania.objects.filter(q_objects).update(Tipo_resultado=tipo_resultado)
+    except Exception as e:
+        print(f"Error updating result: {e}")
