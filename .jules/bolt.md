@@ -1,0 +1,3 @@
+## 2024-05-24 - Efficient Bulk Updates with Multiple Conditions
+**Learning:** To perform efficient bulk updates in Django across disparate multiple conditions (such as specific pairs of `campania_id` and `medio_id`), passing `Q` objects combined via `|=` into `.filter()` allows a single database UPDATE round trip. However, care must be taken to ensure the combined criteria list isn't empty, otherwise `Q()` evaluates to true and causes a catastrophic mass update.
+**Action:** Always check if the iterable building the `Q` object is empty (`if not list_items: return`) before passing the combined `Q` object to `.update()`.
