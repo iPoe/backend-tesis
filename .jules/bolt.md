@@ -1,0 +1,3 @@
+## 2025-02-27 - N+1 query and redundant query in background task
+**Learning:** Found a common pattern in the codebase where models are queried multiple times independently within the same function block, combined with missing eager loading (`select_related`) in loops. For instance, in `campaigns/tasks.py` `enviar_correos`, `contactosxcampa.objects.filter(campania = ID)` was executed twice sequentially, generating unnecessary load on the database.
+**Action:** When inspecting iterative background tasks, explicitly check for duplicate `filter()` calls on the same model and parameter. Assign the query result to a variable, apply `select_related` if relationships are accessed in loops, and reuse the list variable where needed.
