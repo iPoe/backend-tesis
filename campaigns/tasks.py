@@ -87,7 +87,7 @@ def llamar_usuarias(ID, mId, tel=''):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
-    cons = contactosxcampa.objects.filter(campania = ID)
+    cons = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
     m_sms = m.smsmedio
     txt = m_sms.mensaje
@@ -105,11 +105,11 @@ def envMensajeUsuarias(ID,mId):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)
     camp = Campania.objects.get(pk = ID)
-    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
+    usuarios_campaña = usuariasCamp
     tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
 
     res_list = [
