@@ -1,0 +1,3 @@
+## 2024-05-24 - Optimize N+1 Query in Campaign Statistics
+**Learning:** When aggregating statistics in `CampaignViewSet.statistics`, iterating over `resultados` and calling `Contacto.objects.get()` for each unique contact causes an N+1 query problem. Bulk fetching the required `Contacto` instances upfront using `Contacto.objects.in_bulk(contacto_ids, field_name='identidad')` resolves this and provides O(1) in-memory lookups.
+**Action:** Always pre-fetch related instances using `.in_bulk()` with the appropriate field name when iterating through serialized data or results that reference external models by ID, constructing an in-memory dictionary to eliminate sequential `.get()` queries.
