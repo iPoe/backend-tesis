@@ -90,7 +90,7 @@ def reply_whatsapp(request):
         if not usuaria:
             return JsonResponse("User not found", status=404)
 
-        campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
+        campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria).select_related('campania', 'campania__estado')
         estado_activo = estado_campania.objects.get(descripcion=1)
         campañas_activas = [c.campania for c in campañas_usuaria if c.campania.estado == estado_activo]
 
@@ -118,20 +118,29 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from django.db.models import Q
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    try:
+        from .models import mediosxcampania
+        mxcs = mediosxcampania.objects.filter(
+            campania_id__in=campanias,
+            medio_id__tipo_medio__descripcion=5
+        )
+
+        if not mxcs:
+            return
+
+        query = Q()
+        for mxc in mxcs:
+            query |= Q(campania_id=mxc.campania_id_id, medio_id=mxc.medio_id_id)
+
+        if query:
+            resultadosxcampania.objects.filter(
+                query,
+                contacto_cc=usuaria.identidad,
+                fecha=fechaActual
+            ).update(Tipo_resultado=tipo_resultado)
+    except Exception as e:
+        print(f"Error updating result: {e}")
