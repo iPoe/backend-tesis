@@ -1,0 +1,3 @@
+## 2024-10-24 - Bulk updates with dynamic Q objects
+**Learning:** Resolving N+1 issues when the query conditions involve multiple fields per record (e.g., campaign ID and media ID) requires dynamic combination of `Q` objects using the `|` operator, combined with a single bulk `.update()`. If the list of `Q` objects is empty, do not execute the update to prevent mass accidental updates.
+**Action:** When converting iterative loops over querysets into bulk updates, use a single base `filter()` appended with `.filter(q_objects)` where `q_objects` is a dynamically constructed OR chain. Ensure the logic short-circuits safely when the input list is empty.
