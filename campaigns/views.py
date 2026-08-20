@@ -118,20 +118,37 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from .models import mediosxcampania
+    from django.db.models import Q
+
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    campania_ids = [c.id if hasattr(c, 'id') else c for c in campanias]
+    if not campania_ids:
+        return
+
+    try:
+        mxcs = mediosxcampania.objects.filter(
+            campania_id__in=campania_ids,
+            medio_id__tipo_medio__descripcion=5
+        )
+
+        if not mxcs:
+            return
+
+        q_objects = Q()
+        for mxc in mxcs:
+            q_objects |= Q(
+                campania_id=mxc.campania_id,
+                medio_id=mxc.medio_id
+            )
+
+        if q_objects:
+            resultadosxcampania.objects.filter(
+                contacto_cc=usuaria.identidad,
+                fecha=fechaActual
+            ).filter(q_objects).update(Tipo_resultado=tipo_resultado)
+
+    except Exception as e:
+        print(f"Error updating result: {e}")
