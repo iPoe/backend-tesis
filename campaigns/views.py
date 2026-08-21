@@ -118,20 +118,41 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from django.db.models import Q
+    from .models import mediosxcampania
+
+    if not campanias:
+        return
+
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    try:
+        # Get the first WhatsApp media for each campaign just like the original code
+        mxc_qs = mediosxcampania.objects.filter(
+            campania_id__in=campanias,
+            medio_id__tipo_medio__descripcion=5
+        )
+
+        # Deduplicate to keep only the first medio_id per campania_id
+        campania_to_medio = {}
+        for mxc in mxc_qs:
+            if mxc.campania_id_id not in campania_to_medio:
+                campania_to_medio[mxc.campania_id_id] = mxc.medio_id_id
+
+        if not campania_to_medio:
+            return
+
+        q_objects = Q()
+        for campania_id, medio_id in campania_to_medio.items():
+            q_objects |= Q(campania_id_id=campania_id, medio_id_id=medio_id)
+
+        if q_objects:
+            resultadosxcampania.objects.filter(
+                q_objects,
+                contacto_cc=usuaria.identidad,
+                fecha=fechaActual
+            ).update(Tipo_resultado=tipo_resultado)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()

@@ -1,0 +1,3 @@
+## 2024-05-18 - Optimize nested updates in Django views
+**Learning:** The `_cambiar_estado_bulk` function in `campaigns/views.py` contained an N+1 query problem due to iterating over campaigns and executing `.filter().first()` and `.update()` inside the loop. This can be significantly optimized by bulk fetching all relevant relationships and using `Q` objects to perform a single, combined `.update()`.
+**Action:** When updating multiple records based on varying combinations of foreign keys within a loop, collect the foreign key combinations into a list, construct combined `Q` objects with the `|` operator, and perform a single `.filter().update()` to avoid N+1 queries. Always check if the `Q` object list is empty before updating to prevent catastrophic mass updates.
