@@ -39,11 +39,12 @@ class campaignsSerializer(serializers.ModelSerializer):
 		read_only_fields = ['estado']
 
 	def create(self,validated_data):
+		# ⚡ Bolt: Optimize by setting estado_id directly to avoid redundant SELECT query
 		f_ini,f_actual = validated_data['fechaInicio'],date.today()
 		if f_actual == f_ini:
-			validated_data['estado'] = estado_campania.objects.get(descripcion = 1)
+			validated_data['estado_id'] = 1
 		else:
-			validated_data['estado'] = estado_campania.objects.get(descripcion = 2)
+			validated_data['estado_id'] = 2
 		return Campania.objects.create(**validated_data)
 
 
@@ -88,6 +89,7 @@ class MediaSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
+        # ⚡ Bolt: Optimize by directly assigning _id fields instead of fetching related instances
         tipo_medio_desc = validated_data.pop('tipo_medio_id')
         idcam = validated_data.pop('campID')
         intensidad = validated_data.pop('intensidad')
@@ -98,35 +100,34 @@ class MediaSerializer(serializers.ModelSerializer):
         # Determine specialized model
         if tipo_medio_desc == 3: # Email
             medio = EmailMedio.objects.create(
-                tipo_medio=tipo_medio,
+                tipo_medio_id=tipo_medio.id,
                 asunto=removerTags(validated_data.get('email_asunt', '')),
                 cuerpo=removerTags(validated_data.get('email_cuerpo', '')),
                 remitente=validated_data.get('correo', '')
             )
         elif tipo_medio_desc == 4: # SMS
             medio = SMSMedio.objects.create(
-                tipo_medio=tipo_medio,
+                tipo_medio_id=tipo_medio.id,
                 mensaje=validated_data.get('sms', '')
             )
         elif tipo_medio_desc == 5: # WhatsApp
             medio = WhatsAppMedio.objects.create(
-                tipo_medio=tipo_medio,
+                tipo_medio_id=tipo_medio.id,
                 mensaje=validated_data.get('sms', '')
             )
         elif tipo_medio_desc in [1, 2]: # Voice (Cell/Tel)
             medio = VoiceMedio.objects.create(
-                tipo_medio=tipo_medio,
+                tipo_medio_id=tipo_medio.id,
                 mensaje_texto=validated_data.get('sms', ''), # Using sms field for text-to-speech if no audio
                 audio_file=validated_data.get('llamada_aud', None)
             )
         else:
-            medio = Medio.objects.create(tipo_medio=tipo_medio)
-
-        campania = Campania.objects.get(pk=idcam)
+            medio = Medio.objects.create(tipo_medio_id=tipo_medio.id)
         
         # Create mediosxcampania entry
+        # Notice that campania_id is the foreign key name, its column is campania_id_id
         mxc_params = {
-            'campania_id': campania,
+            'campania_id_id': idcam,
             'medio_id': medio,
             'intensidad': intensidad,
             'hora1': horas[0] if len(horas) > 0 else None,
