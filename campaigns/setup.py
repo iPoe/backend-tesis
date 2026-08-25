@@ -25,8 +25,9 @@ class Camp_setup:
                     campania = self.camp.save()
                     if campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
+                        # ⚡ Bolt: Eliminate redundant SELECT query since campania is already in memory
                         objs = [contactosxcampa(
-                            campania = Campania.objects.get(pk = campania.id),
+                            campania = campania,
                             contacto = contacto,nombreContactos=self.datacamp['nombreContactos'])
                             for contacto in contactos
                         ]
@@ -44,9 +45,10 @@ class Camp_setup:
         data_medios = data
         try:
             with transaction.atomic():
-                idcam = Campania.objects.get(pk=ID).id
+                # ⚡ Bolt: Eliminate redundant SELECT query to fetch the exact same ID passed in
+                # Validation is already handled downstream in MediaSerializer
                 for m in data_medios:
-                    m['campID']= idcam
+                    m['campID']= ID
                 crear_medio(data_medios)
         except Exception as e:
             print("exception Encountered in create media func")
