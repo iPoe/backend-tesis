@@ -26,7 +26,9 @@ class Camp_setup:
                     if campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
                         objs = [contactosxcampa(
-                            campania = Campania.objects.get(pk = campania.id),
+                            # ⚡ Bolt: Use existing 'campania' object instead of re-fetching via
+                            # Campania.objects.get(pk=campania.id) to fix O(N) query bottleneck
+                            campania = campania,
                             contacto = contacto,nombreContactos=self.datacamp['nombreContactos'])
                             for contacto in contactos
                         ]
@@ -44,7 +46,8 @@ class Camp_setup:
         data_medios = data
         try:
             with transaction.atomic():
-                idcam = Campania.objects.get(pk=ID).id
+                # ⚡ Bolt: Use passed ID directly instead of querying Campania.objects.get(pk=ID).id
+                idcam = ID
                 for m in data_medios:
                     m['campID']= idcam
                 crear_medio(data_medios)
