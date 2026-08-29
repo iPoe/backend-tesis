@@ -1,0 +1,3 @@
+## 2026-08-29 - Fixed N+1 query in CampaignViewSet.list and CampaignViewSet.statistics
+**Learning:** Found N+1 loops in CampaignViewSet where nested objects (mediosxcampania for list, and Contacto for statistics) were queried within loops over initial result sets. This is a common bottleneck when displaying campaigns in dashboards and exporting stats. Bulk fetching using `.filter(id__in=[...])` and mapping into memory dicts eliminates the redundant O(n) database calls.
+**Action:** When working on serializing lists or grouping data, always extract the foreign keys, query the full result set via `__in`, and construct lookup dictionaries to perform lookups in O(1) in memory, and ensure nested relations are fetched using `.select_related()`.

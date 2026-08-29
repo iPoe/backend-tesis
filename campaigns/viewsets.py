@@ -30,8 +30,20 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
+
+        # Pre-fetch all mediosxcampania for the campaigns in the current page/queryset
+        campania_ids = [x['id'] for x in data]
+        if not campania_ids:
+            return Response(data)
+
+        from collections import defaultdict
+        mxc_qs = mediosxcampania.objects.filter(campania_id_id__in=campania_ids).select_related('medio_id', 'medio_id__tipo_medio')
+        mxc_map = defaultdict(list)
+        for mxc in mxc_qs:
+            mxc_map[mxc.campania_id_id].append(mxc)
+
         for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
+            mxc = mxc_map.get(x['id'], [])
             x.pop('operador_ID', None)
             x.pop('Fecha_Creada', None)
             medioSerializer = contactosxcampSerializer(mxc, many=True)
@@ -133,9 +145,14 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 contacantiguo = resultados[0]['contacto_cc']
                 dicresxmed = {}
                 i = 1
+
+                # Fetch all contacts in a single query
+                contact_ids = [res['contacto_cc'] for res in resultados]
+                contacts_map = {c.identidad: c for c in Contacto.objects.filter(identidad__in=contact_ids)}
+
                 for res in resultados:
                     if res['contacto_cc'] != contacantiguo:
-                        contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                        contSer = ContactosSerializer(contacts_map[contacantiguo])
                         dicfinal = {**contSer.data, **dicresxmed}
                         listausers.append(dicfinal)
                         dicresxmed, i = {}, 1
@@ -149,7 +166,7 @@ class CampaignViewSet(viewsets.ModelViewSet):
                     contacantiguo = res['contacto_cc']
                     i += 1
 
-                contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                contSer = ContactosSerializer(contacts_map[contacantiguo])
                 dicfinal = {**contSer.data, **dicresxmed}
                 listausers.append(dicfinal)
                 dataest['estadistica'] = listausers
