@@ -44,7 +44,7 @@ class Camp_setup:
         data_medios = data
         try:
             with transaction.atomic():
-                idcam = Campania.objects.get(pk=ID).id
+                idcam = ID
                 for m in data_medios:
                     m['campID']= idcam
                 crear_medio(data_medios)
