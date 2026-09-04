@@ -27,11 +27,25 @@ class CampaignViewSet(viewsets.ModelViewSet):
     serializer_class = campaignsSerializer
 
     def list(self, request, *args, **kwargs):
+        from collections import defaultdict
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
+
+        campania_ids = [x['id'] for x in data]
+        mxc_map = defaultdict(list)
+
+        if campania_ids:
+            mxc_queryset = mediosxcampania.objects.filter(
+                campania_id__in=campania_ids
+            ).select_related('medio_id', 'medio_id__tipo_medio')
+
+            for mxc in mxc_queryset:
+                # Extract grouping attributes safely using getattr to support explicit _id naming
+                mxc_map[getattr(mxc, 'campania_id_id', getattr(mxc, 'campania_id', None))].append(mxc)
+
         for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
+            mxc = mxc_map[x['id']]
             x.pop('operador_ID', None)
             x.pop('Fecha_Creada', None)
             medioSerializer = contactosxcampSerializer(mxc, many=True)
