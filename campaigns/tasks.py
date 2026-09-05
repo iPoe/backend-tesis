@@ -87,7 +87,8 @@ def llamar_usuarias(ID, mId, tel=''):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
-    cons = contactosxcampa.objects.filter(campania = ID)
+    # Optimized: Added select_related('contacto') to prevent N+1 queries during SMS bulk sending
+    cons = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
     m_sms = m.smsmedio
     txt = m_sms.mensaje
