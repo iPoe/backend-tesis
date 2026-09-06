@@ -129,13 +129,17 @@ class CampaignViewSet(viewsets.ModelViewSet):
             ).order_by('contacto_cc', 'medio_id')
 
             if len(resultados) > 0:
+                # ⚡ Bolt Optimization: Bulk fetch contacts to avoid N+1 query loop
+                contact_ids = {res['contacto_cc'] for res in resultados}
+                contacts_map = {c.identidad: c for c in Contacto.objects.filter(identidad__in=contact_ids)}
+
                 listausers = []
                 contacantiguo = resultados[0]['contacto_cc']
                 dicresxmed = {}
                 i = 1
                 for res in resultados:
                     if res['contacto_cc'] != contacantiguo:
-                        contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                        contSer = ContactosSerializer(contacts_map[contacantiguo])
                         dicfinal = {**contSer.data, **dicresxmed}
                         listausers.append(dicfinal)
                         dicresxmed, i = {}, 1
@@ -149,7 +153,7 @@ class CampaignViewSet(viewsets.ModelViewSet):
                     contacantiguo = res['contacto_cc']
                     i += 1
 
-                contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                contSer = ContactosSerializer(contacts_map[contacantiguo])
                 dicfinal = {**contSer.data, **dicresxmed}
                 listausers.append(dicfinal)
                 dataest['estadistica'] = listausers
