@@ -87,7 +87,8 @@ def llamar_usuarias(ID, mId, tel=''):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
-    cons = contactosxcampa.objects.filter(campania = ID)
+    # ⚡ Bolt: Optimized N+1 queries by using select_related('contacto')
+    cons = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
     m_sms = m.smsmedio
     txt = m_sms.mensaje
@@ -105,16 +106,17 @@ def envMensajeUsuarias(ID,mId):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
-    correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
+    # ⚡ Bolt: Optimized N+1 queries and duplicate filtering by using select_related('contacto')
+    # and reusing the queryset for both email extraction and results generation
+    usuariasCamp = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
+    correosUsuarios = [usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)
-    camp = Campania.objects.get(pk = ID)
-    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
-    tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
+    camp = Campania.objects.get(pk=ID)
+    tipoRes = Tipo_resultado.objects.get(descripcion="si")
 
     res_list = [
-        resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
-        for usuario in usuarios_campaña
+        resultadosxcampania(contacto_cc=usuario.contacto, campania_id=camp, medio_id=m, fecha=date.today(), Tipo_resultado=tipoRes)
+        for usuario in usuariasCamp
     ]
     resultadosxcampania.objects.bulk_create(res_list)
 
@@ -145,6 +147,7 @@ def send_mailgun_message(from_, to, subject, text, tag=None, track=True):
     send_message_via_smtp(from_, to, msg.as_string())
 
 def enviarWhatsapp(ID,mId):
+    # ⚡ Bolt: select_related already used here
     usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID).select_related('contacto'),Campania.objects.get(pk = ID)
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
 
