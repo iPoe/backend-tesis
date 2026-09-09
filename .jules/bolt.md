@@ -1,0 +1,6 @@
+## 2025-05-24 - Bulk Fetching for Custom Serialization Loops
+**Learning:** When generating custom statistics or serialization output that groups results by a foreign key (like Contacto), calling `.get()` inside a loop for each unique key causes a classic N+1 query problem, increasing load on the database proportional to the number of unique groups.
+**Action:** Extract all unique foreign key IDs from the queried data before the loop and use Django's `.in_bulk(id_list)` to create a pre-fetched O(1) in-memory lookup dictionary. This replaces N database queries with exactly 1.
+## 2025-05-24 - Primary Keys and in_bulk
+**Learning:** The `Contacto` model in `campaigns/models.py` uses `identidad` (CharField) as its primary key. By default, querying `Contacto.objects.in_bulk()` uses `identidad` for its dictionary keys, not a standard auto-incrementing ID.
+**Action:** When using `.in_bulk()` on models with custom primary keys, be aware that the resulting dictionary keys will be the custom primary key field. Also, when replacing `.get()` calls with dictionary lookups, manually verify and explicitly raise exceptions (e.g., `raise Model.DoesNotExist(...)`) if the original behavior required strict error handling on missing records to avoid silent regressions.
