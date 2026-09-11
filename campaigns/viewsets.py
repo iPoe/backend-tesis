@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from datetime import date
 import datetime as dt
 import traceback
+from collections import defaultdict
 
 from .models import (
     Campania, Contacto, Medio, mediosxcampania, estado_campania,
@@ -30,10 +31,21 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
+
+        campania_ids = [x['id'] for x in data]
+        if not campania_ids:
+            return Response(data)
+
+        # ⚡ Bolt: Bulk fetch related objects mapped by campania_id to prevent N+1 query during serialization
+        mxc_qs = mediosxcampania.objects.filter(campania_id__in=campania_ids).select_related('medio_id', 'medio_id__tipo_medio')
+        mxc_map = defaultdict(list)
+        for m in mxc_qs:
+            mxc_map[m.campania_id_id].append(m)
+
         for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
             x.pop('operador_ID', None)
             x.pop('Fecha_Creada', None)
+            mxc = mxc_map.get(x['id'], [])
             medioSerializer = contactosxcampSerializer(mxc, many=True)
             x['medios'] = medioSerializer.data
         return Response(data)
