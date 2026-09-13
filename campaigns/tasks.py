@@ -105,11 +105,11 @@ def envMensajeUsuarias(ID,mId):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
-    correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
+    # ⚡ Bolt: Prevent N+1 queries and duplicate fetch for contactosxcampa
+    usuarios_campaña = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
+    correosUsuarios = [ usuario.contacto.email for usuario in usuarios_campaña]
     m = Medio.objects.get(pk=mId)
     camp = Campania.objects.get(pk = ID)
-    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
     tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
 
     res_list = [
