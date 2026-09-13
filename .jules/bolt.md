@@ -1,0 +1,3 @@
+## 2025-03-13 - [Optimize enviar_correos in campaigns/tasks.py]
+**Learning:** The `enviar_correos` Celery task contains an N+1 database query vulnerability inside a list comprehension (`[usuaria.contacto.email for usuaria in usuariasCamp]`) because the `contacto` relation is not prefetched. Additionally, the task executed a duplicate query `contactosxcampa.objects.filter(campania = ID)` immediately afterward.
+**Action:** Always use `.select_related()` on ForeignKey relationships when iterating over a queryset to access related model fields, avoiding N+1 bottlenecks. Deduplicate identical `.filter()` calls within a function scope by assigning the resulting queryset to a variable and reusing it.
