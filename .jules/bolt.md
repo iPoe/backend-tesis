@@ -1,0 +1,3 @@
+## 2023-10-27 - Resolved N+1 query in list comprehension
+**Learning:** List comprehensions that access nested foreign key properties on non-pre-fetched querysets (e.g. `c.campania.estado`) cause N+1 query bottlenecks as Django sequentially fetches each nested record.
+**Action:** Use `.select_related()` (or `.prefetch_related()` for many-to-many) when querying the base objects to load all related objects in a single JOIN query, ensuring list comprehensions don't trigger subsequent queries.
