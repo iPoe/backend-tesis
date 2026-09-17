@@ -48,22 +48,48 @@ class campaignsSerializer(serializers.ModelSerializer):
 
 
 
+class ContactosListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        # ⚡ Bolt Optimization: Bulk update_or_create to prevent N+1 insert queries
+        # Deduplicate incoming data based on the unique key 'identidad'
+        deduped = {item['identidad']: item for item in validated_data}.values()
+
+        contactos = [
+            Contacto(
+                identidad=item['identidad'],
+                nombre=item.get('nombre', ''),
+                celular=item.get('celular', ''),
+                telefono=item.get('telefono', ''),
+                email=item.get('email', ''),
+                fecha_nacimiento=item.get('fecha_nacimiento')
+            )
+            for item in deduped
+        ]
+
+        return Contacto.objects.bulk_create(
+            contactos,
+            update_conflicts=True,
+            unique_fields=['identidad'],
+            update_fields=['nombre', 'celular', 'telefono', 'email', 'fecha_nacimiento']
+        )
+
 class ContactosSerializer(serializers.ModelSerializer):
-	fecha_nacimiento = serializers.DateField(input_formats=['%d/%m/%Y'])
-	nombre = serializers.CharField(max_length=50)
-	class Meta:
-		model = Contacto
-		fields = ['identidad', 'nombre','fecha_nacimiento','celular','email','telefono']
-		extra_kwargs = {
+    fecha_nacimiento = serializers.DateField(input_formats=['%d/%m/%Y'])
+    nombre = serializers.CharField(max_length=50)
+    class Meta:
+        model = Contacto
+        list_serializer_class = ContactosListSerializer
+        fields = ['identidad', 'nombre','fecha_nacimiento','celular','email','telefono']
+        extra_kwargs = {
             'identidad': {
                 'validators': [],
             }
         }
 
-	def create(self,validated_data):
-		contacto, created = Contacto.objects.update_or_create(identidad=validated_data['identidad'],
-			defaults={"nombre":validated_data['nombre'],"celular":validated_data['celular'],"telefono":validated_data['telefono'],"email":validated_data['email'],"fecha_nacimiento":validated_data['fecha_nacimiento']})
-		return contacto
+    def create(self,validated_data):
+        contacto, created = Contacto.objects.update_or_create(identidad=validated_data['identidad'],
+            defaults={"nombre":validated_data.get('nombre', ''),"celular":validated_data.get('celular', ''),"telefono":validated_data.get('telefono', ''),"email":validated_data.get('email', ''),"fecha_nacimiento":validated_data.get('fecha_nacimiento')})
+        return contacto
 
 
 class MediaSerializer(serializers.ModelSerializer):
