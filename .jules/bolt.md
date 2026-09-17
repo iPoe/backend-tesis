@@ -1,0 +1,3 @@
+## 2024-09-17 - Django DRF Bulk Insert Optimization
+**Learning:** In DRF, when serializing a list of inputs that trigger sequential `update_or_create` calls (N+1 query problem), we can drastically reduce database queries by writing a custom `ListSerializer`. This `ListSerializer` can deduplicate the dataset in memory and then execute a single `bulk_create(update_conflicts=True)` with explicit `unique_fields` and `update_fields`.
+**Action:** When working on performance enhancements for Django applications involving lists of objects, implement a `ListSerializer` and leverage `bulk_create(update_conflicts=True)` instead of repetitive individual inserts to significantly improve throughput.
