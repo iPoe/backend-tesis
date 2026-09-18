@@ -30,12 +30,31 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
+
+        # ⚡ Bolt Optimization: Fix N+1 query problem by bulk fetching mediosxcampania
+        # Previously, each campaign in the list executed a separate query to fetch its media.
+        # Now we fetch all media for all campaigns in a single query and group them in memory.
+        campania_ids = [x['id'] for x in data]
+        if not campania_ids:
+            return Response(data)
+
+        mxc_queryset = mediosxcampania.objects.filter(
+            campania_id__in=campania_ids
+        ).select_related('medio_id', 'medio_id__tipo_medio')
+
+        from collections import defaultdict
+        mxc_by_campania = defaultdict(list)
+        for mxc in mxc_queryset:
+            mxc_by_campania[mxc.campania_id_id].append(mxc)
+
         for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
+            camp_id = x['id']
+            mxc_list = mxc_by_campania[camp_id]
             x.pop('operador_ID', None)
             x.pop('Fecha_Creada', None)
-            medioSerializer = contactosxcampSerializer(mxc, many=True)
+            medioSerializer = contactosxcampSerializer(mxc_list, many=True)
             x['medios'] = medioSerializer.data
+
         return Response(data)
 
     def create(self, request, *args, **kwargs):
