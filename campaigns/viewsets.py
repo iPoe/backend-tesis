@@ -30,8 +30,21 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
+        # ⚡ Bolt: Bulk fetch mediosxcampania grouped by campania_id to prevent N+1 query
+        campania_ids = [x['id'] for x in data if 'id' in x]
+
+        from collections import defaultdict
+        mxc_map = defaultdict(list)
+
+        if campania_ids:
+            mxc_queryset = mediosxcampania.objects.filter(campania_id__in=campania_ids).select_related('medio_id', 'medio_id__tipo_medio')
+            for mxc in mxc_queryset:
+                # Store the ID as string to match DRF serialized data dictionary keys
+                mxc_map[str(mxc.campania_id_id)].append(mxc)
+
         for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
+            # Look up using string representation of ID
+            mxc = mxc_map[str(x.get('id', ''))]
             x.pop('operador_ID', None)
             x.pop('Fecha_Creada', None)
             medioSerializer = contactosxcampSerializer(mxc, many=True)
