@@ -30,8 +30,27 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
+
+        # Bolt Optimization: Prevent N+1 queries by bulk fetching related mediosxcampania
+        # mapped by campania_id_id via a defaultdict. Using select_related avoids
+        # secondary N+1 queries when the serializer accesses medio_id.tipo_medio.
+        from collections import defaultdict
+
+        ids = [x['id'] for x in data]
+        medios_dict = defaultdict(list)
+        if ids:
+            mxc_list = mediosxcampania.objects.filter(
+                campania_id__in=ids
+            ).select_related('medio_id', 'medio_id__tipo_medio')
+            for mxc in mxc_list:
+                # Check if it has campania_id_id or just campania_id depending on exact model definition
+                c_id = getattr(mxc, 'campania_id_id', getattr(mxc, 'campania_id', None))
+                if not isinstance(c_id, int) and hasattr(c_id, 'id'):
+                    c_id = c_id.id
+                medios_dict[c_id].append(mxc)
+
         for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
+            mxc = medios_dict.get(x['id'], [])
             x.pop('operador_ID', None)
             x.pop('Fecha_Creada', None)
             medioSerializer = contactosxcampSerializer(mxc, many=True)
@@ -130,12 +149,22 @@ class CampaignViewSet(viewsets.ModelViewSet):
 
             if len(resultados) > 0:
                 listausers = []
+                # Bolt Optimization: Bulk fetch related Contacto objects
+                # Using in_bulk to avoid N+1 querying Contacto.objects.get() in the loop.
+                contactos_ids = set(r['contacto_cc'] for r in resultados)
+                # Bolt Optimization: Fix in_bulk lookup to use the correct primary key / field_name
+                contactos_dict = Contacto.objects.in_bulk(contactos_ids, field_name='identidad')
+
                 contacantiguo = resultados[0]['contacto_cc']
                 dicresxmed = {}
                 i = 1
                 for res in resultados:
                     if res['contacto_cc'] != contacantiguo:
-                        contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                        contacto = contactos_dict.get(contacantiguo)
+                        if not contacto:
+                            # If not found in bulk, fallback to original behavior which raises DoesNotExist
+                            contacto = Contacto.objects.get(identidad=contacantiguo)
+                        contSer = ContactosSerializer(contacto)
                         dicfinal = {**contSer.data, **dicresxmed}
                         listausers.append(dicfinal)
                         dicresxmed, i = {}, 1
@@ -149,7 +178,11 @@ class CampaignViewSet(viewsets.ModelViewSet):
                     contacantiguo = res['contacto_cc']
                     i += 1
 
-                contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
+                contacto = contactos_dict.get(contacantiguo)
+                if not contacto:
+                    # If not found in bulk, fallback to original behavior which raises DoesNotExist
+                    contacto = Contacto.objects.get(identidad=contacantiguo)
+                contSer = ContactosSerializer(contacto)
                 dicfinal = {**contSer.data, **dicresxmed}
                 listausers.append(dicfinal)
                 dataest['estadistica'] = listausers

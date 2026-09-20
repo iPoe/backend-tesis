@@ -1,0 +1,3 @@
+## 2025-09-20 - N+1 Bottleneck in Campaign Statistics Loop
+**Learning:** In `CampaignViewSet.statistics`, iterating through `resultados` and fetching `Contacto.objects.get()` for each new `contacto_cc` creates an N+1 bottleneck, especially as the number of distinct contacts grows. Django's `.in_bulk()` can fetch these upfront but we must still handle `DoesNotExist` gracefully for robustness if missing records exist.
+**Action:** When iterating over a query result that references a foreign key like `contacto_cc`, gather all unique IDs (`set(r['contacto_cc'] for r in resultados)`) and pre-fetch them with `.in_bulk()`. Then use a dictionary lookup inside the loop, paired with fallback logic to fetch or handle missing entries.
