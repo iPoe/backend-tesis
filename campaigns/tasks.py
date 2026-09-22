@@ -87,7 +87,8 @@ def llamar_usuarias(ID, mId, tel=''):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
-    cons = contactosxcampa.objects.filter(campania = ID)
+    # Optimize: Fetch contacts with select_related and reuse queryset to avoid N+1 and duplicate queries
+    cons = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
     m_sms = m.smsmedio
     txt = m_sms.mensaje
@@ -105,16 +106,16 @@ def envMensajeUsuarias(ID,mId):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    # Optimize: Fetch contacts with select_related and reuse queryset to avoid duplicate fetches and N+1 queries
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)
     camp = Campania.objects.get(pk = ID)
-    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
     tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
 
     res_list = [
         resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
-        for usuario in usuarios_campaña
+        for usuario in usuariasCamp
     ]
     resultadosxcampania.objects.bulk_create(res_list)
 
