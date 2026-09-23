@@ -1,0 +1,3 @@
+## 2026-09-23 - Optimizing related model bulk creation in Django tasks
+**Learning:** In Django background tasks where IDs are explicitly provided, fetching the parent model via `.get()` just to populate ForeignKey fields on created child models is redundant and creates duplicate queries.
+**Action:** Instead of querying parent objects (e.g., `Campania.objects.get(pk=ID)`), directly pass the known ID to the underlying database field attribute (e.g., `campania_id_id=ID`) when initializing models for `bulk_create`. Ensure we use `.select_related` on chained model fetches to avoid subsequent hidden queries.
