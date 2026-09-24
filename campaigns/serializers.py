@@ -139,7 +139,7 @@ class MediaSerializer(serializers.ModelSerializer):
 
 
 class contactosxcampSerializer(serializers.ModelSerializer):
-	id = serializers.CharField(source='medio_id.tipo_medio')
+	id = serializers.CharField(source='medio_id.tipo_medio_id', read_only=True)
 	class Meta:
 		model = mediosxcampania
 		fields = ['id','intensidad']
