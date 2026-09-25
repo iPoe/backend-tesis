@@ -74,16 +74,12 @@ def llamar_usuarias(ID, mId, tel=''):
     matchUrlAudio = True if m_voice.audio_file else False
     mensajeVoz = m_voice.mensaje_texto
     urlAUdio = m_voice.audio_file.url if matchUrlAudio else ''
-    camp = Campania.objects.get(pk = ID)
-    cant = len(numerosUsuarias)
 
-    res_list = [
-        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
-        for n in range(cant)
-    ]
-    created_res = resultadosxcampania.objects.bulk_create(res_list)
+    # ⚡ Bolt: Fix NameError for undefined 'numerosUsuarias' and remove duplicate
+    # DB fetches/inserts that were inadvertently performing identical redundant operations
+    numerosUsuarias = ["+57" + obj.contacto.celular for obj in cons]
 
-    for n, res in enumerate(created_res):
+    for n, res in enumerate(resultados_creados):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
@@ -105,11 +101,12 @@ def envMensajeUsuarias(ID,mId):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    # ⚡ Bolt: select_related('contacto') to prevent N+1 queries. Also reuse usuariasCamp to avoid duplicate queries.
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)
     camp = Campania.objects.get(pk = ID)
-    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
+    usuarios_campaña = usuariasCamp
     tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
 
     res_list = [
