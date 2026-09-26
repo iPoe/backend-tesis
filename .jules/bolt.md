@@ -1,0 +1,3 @@
+## 2024-06-25 - N+1 bottlenecks when accessing related properties
+**Learning:** In Django functions like `enviar_correos`, retrieving a nested property during a list comprehension over an ORM queryset (e.g. `[usuario.contacto.email for usuario in usuarios_campaña]`) triggers a separate `SELECT` query for each iteration if `.select_related()` is omitted. Additionally, multiple identical `.objects.filter(campania = ID)` calls inside the same scope are not magically cached, leading to redundant DB lookups.
+**Action:** When iterating over a queryset to extract related fields, ensure `.select_related()` is prepended. Also deduplicate ORM fetched objects into variables within function scope.
