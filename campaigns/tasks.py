@@ -105,15 +105,15 @@ def envMensajeUsuarias(ID,mId):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
-    correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
+    # Optimized: Use select_related to prevent N+1 queries when accessing contacto.email, and reuse the queryset
+    usuarios_campaña = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
+    correosUsuarios = [usuario.contacto.email for usuario in usuarios_campaña]
     m = Medio.objects.get(pk=mId)
-    camp = Campania.objects.get(pk = ID)
-    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
-    tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
+    camp = Campania.objects.get(pk=ID)
+    tipoRes = Tipo_resultado.objects.get(descripcion="si")
 
     res_list = [
-        resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
+        resultadosxcampania(contacto_cc=usuario.contacto, campania_id=camp, medio_id=m, fecha=date.today(), Tipo_resultado=tipoRes)
         for usuario in usuarios_campaña
     ]
     resultadosxcampania.objects.bulk_create(res_list)
