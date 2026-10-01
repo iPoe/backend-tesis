@@ -87,16 +87,16 @@ def llamar_usuarias(ID, mId, tel=''):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
-    cons = contactosxcampa.objects.filter(campania = ID)
+    # Bolt: Added select_related to fix N+1 queries and bypassed redundant Campania.objects.get()
+    cons = list(contactosxcampa.objects.filter(campania = ID).select_related('contacto'))
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
     m_sms = m.smsmedio
     txt = m_sms.mensaje
     numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
-    camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
 
     res_list = [
-        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id_id=ID,medio_id=m,fecha=fechaActual)
         for n in range(cant)
     ]
     created_res = resultadosxcampania.objects.bulk_create(res_list)
