@@ -53,16 +53,20 @@ def crearTareacampaigns(campId, hora, minute, mId, tel=""):
         CampaignTask.objects.create(campania=cam, periodic_task_id=periodic_task.id, medio=m)
 
 def llamar_usuarias(ID, mId, tel=''):
+    # Optimize: select_related to avoid N+1 queries for contacto
     cons = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
-    m = Medio.objects.get(pk=mId)
+    # Optimize: select_related voicemedio to avoid N+1
+    m = Medio.objects.select_related('voicemedio').get(pk=mId)
     fechaActual = date.today()
-    camp = Campania.objects.get(pk=ID)
+
+    numerosUsuarias = ["+57" + (obj.contacto.telefono if tel else obj.contacto.celular) for obj in cons]
 
     resultados = [
+        # Optimize: avoid Campania redundant query by assigning campania_id_id directly
         resultadosxcampania(
             contacto_cc=obj.contacto,
-            campania_id=camp,
-            medio_id=m,
+            campania_id_id=ID,
+            medio_id_id=mId,
             fecha=fechaActual
         )
         for obj in cons
@@ -74,29 +78,23 @@ def llamar_usuarias(ID, mId, tel=''):
     matchUrlAudio = True if m_voice.audio_file else False
     mensajeVoz = m_voice.mensaje_texto
     urlAUdio = m_voice.audio_file.url if matchUrlAudio else ''
-    camp = Campania.objects.get(pk = ID)
-    cant = len(numerosUsuarias)
 
-    res_list = [
-        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
-        for n in range(cant)
-    ]
-    created_res = resultadosxcampania.objects.bulk_create(res_list)
-
-    for n, res in enumerate(created_res):
+    for n, res in enumerate(resultados_creados):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
-    cons = contactosxcampa.objects.filter(campania = ID)
-    m,fechaActual = Medio.objects.get(pk=mId),date.today()
-    m_sms = m.smsmedio
-    txt = m_sms.mensaje
+    # Optimize: select_related to avoid N+1 queries for contacto
+    cons = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
+    # Optimize: select_related smsmedio to avoid N+1
+    m = Medio.objects.select_related('smsmedio').get(pk=mId)
+    fechaActual = date.today()
+    txt = m.smsmedio.mensaje
     numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
-    camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
 
     res_list = [
-        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        # Optimize: avoid Campania redundant query by assigning campania_id_id directly
+        resultadosxcampania(contacto_cc=cons[n].contacto, campania_id_id=ID, medio_id_id=mId, fecha=fechaActual)
         for n in range(cant)
     ]
     created_res = resultadosxcampania.objects.bulk_create(res_list)
@@ -105,16 +103,17 @@ def envMensajeUsuarias(ID,mId):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
-    correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
-    m = Medio.objects.get(pk=mId)
-    camp = Campania.objects.get(pk = ID)
-    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
-    tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
+    # Optimize: select_related to avoid N+1 queries for contacto, remove redundant query
+    usuariasCamp = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
+    correosUsuarios = [usuaria.contacto.email for usuaria in usuariasCamp]
+    # Optimize: select_related emailmedio to avoid N+1
+    m = Medio.objects.select_related('emailmedio').get(pk=mId)
+    tipoRes = Tipo_resultado.objects.get(descripcion="si")
 
     res_list = [
-        resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
-        for usuario in usuarios_campaña
+        # Optimize: avoid Campania redundant query by assigning campania_id_id directly
+        resultadosxcampania(contacto_cc=usuario.contacto, campania_id_id=ID, medio_id_id=mId, fecha=date.today(), Tipo_resultado=tipoRes)
+        for usuario in usuariasCamp
     ]
     resultadosxcampania.objects.bulk_create(res_list)
 
