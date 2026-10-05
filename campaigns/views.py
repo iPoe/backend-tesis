@@ -90,7 +90,8 @@ def reply_whatsapp(request):
         if not usuaria:
             return JsonResponse("User not found", status=404)
 
-        campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
+        # ⚡ Bolt: Prevent N+1 queries by using select_related to prefetch campania and its estado
+        campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria).select_related('campania', 'campania__estado')
         estado_activo = estado_campania.objects.get(descripcion=1)
         campañas_activas = [c.campania for c in campañas_usuaria if c.campania.estado == estado_activo]
 
@@ -118,20 +119,29 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from django.db.models import Q
+    from .models import mediosxcampania
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
+    # ⚡ Bolt: Prevent N+1 query problem by bulk updating results with a single combined query
+    try:
+        mxcs = mediosxcampania.objects.filter(
+            campania_id__in=campanias,
+            medio_id__tipo_medio__descripcion=5
+        ).values('campania_id', 'medio_id')
+
+        if mxcs:
+            q_objects = Q()
+            for mxc in mxcs:
+                q_objects |= Q(
+                    contacto_cc=usuaria.identidad,
+                    campania_id=mxc['campania_id'],
+                    medio_id=mxc['medio_id'],
                     fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+                )
+
+            if q_objects:
+                resultadosxcampania.objects.filter(q_objects).update(Tipo_resultado=tipo_resultado)
+    except Exception as e:
+        print(f"Error updating result: {e}")
