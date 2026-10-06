@@ -30,12 +30,30 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
-        for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
-            x.pop('operador_ID', None)
-            x.pop('Fecha_Creada', None)
-            medioSerializer = contactosxcampSerializer(mxc, many=True)
-            x['medios'] = medioSerializer.data
+
+        # Performance optimization: N+1 queries in list serialization
+        # Instead of querying mediosxcampania for every campaign, fetch them all at once
+        from collections import defaultdict
+
+        # Get IDs
+        camp_ids = [x['id'] for x in data]
+
+        if camp_ids:
+            # Fetch all related models in one query using select_related to avoid more N+1
+            mxc_all = mediosxcampania.objects.filter(campania_id__in=camp_ids).select_related('medio_id', 'medio_id__tipo_medio')
+
+            # Map them
+            mxc_map = defaultdict(list)
+            for mxc in mxc_all:
+                mxc_map[mxc.campania_id_id].append(mxc)
+
+            for x in data:
+                mxc_list = mxc_map.get(x['id'], [])
+                x.pop('operador_ID', None)
+                x.pop('Fecha_Creada', None)
+                medioSerializer = contactosxcampSerializer(mxc_list, many=True)
+                x['medios'] = medioSerializer.data
+
         return Response(data)
 
     def create(self, request, *args, **kwargs):
