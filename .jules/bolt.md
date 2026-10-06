@@ -1,0 +1,3 @@
+## 2024-10-06 - N+1 Query in Django REST Framework Serialized List
+**Learning:** DRF list serialization often causes N+1 problems when iterating over `serializer.data` and making separate DB queries for related models inside the loop. In this codebase, the `mediosxcampania` models use `campania_id` as the unconventionally named ForeignKey. Therefore, the actual database integer ID is accessed via `campania_id_id`.
+**Action:** When optimizing list serialization loops, always extract all IDs first, run a single `__in=` query (with `select_related` or `prefetch_related`), and use `collections.defaultdict` mapped by the underlying integer ForeignKey attribute (e.g. `campania_id_id`) to perform in-memory grouping without triggering additional database calls.
