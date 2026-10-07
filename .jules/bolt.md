@@ -1,0 +1,3 @@
+## 2025-02-28 - Optimize N+1 and bypass redundant get() in campaign tasks
+**Learning:** In Django tasks processing bulk relations, `objects.get(pk=ID)` is often used just to assign the foreign key to new child objects. This is a redundant query since Django allows directly assigning the integer ID via the underlying `_id` attribute (e.g., `campania_id_id=ID`). Additionally, we found a bug in `llamar_usuarias` where `bulk_create` was accidentally called twice for the same loop.
+**Action:** Always check if a fetched model instance is only being used to populate a foreign key on another model. If so, bypass the `.get()` and assign the ID directly to avoid the extra query. Ensure `bulk_create` results are properly assigned and not duplicated.

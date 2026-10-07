@@ -54,15 +54,14 @@ def crearTareacampaigns(campId, hora, minute, mId, tel=""):
 
 def llamar_usuarias(ID, mId, tel=''):
     cons = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
-    m = Medio.objects.get(pk=mId)
     fechaActual = date.today()
-    camp = Campania.objects.get(pk=ID)
 
+    # Optimize by assigning foreign keys directly and removing the duplicated bulk_create bug
     resultados = [
         resultadosxcampania(
             contacto_cc=obj.contacto,
-            campania_id=camp,
-            medio_id=m,
+            campania_id_id=ID,
+            medio_id_id=mId,
             fecha=fechaActual
         )
         for obj in cons
@@ -70,33 +69,30 @@ def llamar_usuarias(ID, mId, tel=''):
     # bulk_create returns the objects with IDs populated when using PostgreSQL
     resultados_creados = resultadosxcampania.objects.bulk_create(resultados)
 
-    m_voice = m.voicemedio
+    from .models import VoiceMedio
+    m_voice = VoiceMedio.objects.get(pk=mId)
     matchUrlAudio = True if m_voice.audio_file else False
     mensajeVoz = m_voice.mensaje_texto
     urlAUdio = m_voice.audio_file.url if matchUrlAudio else ''
-    camp = Campania.objects.get(pk = ID)
-    cant = len(numerosUsuarias)
+    numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
 
-    res_list = [
-        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
-        for n in range(cant)
-    ]
-    created_res = resultadosxcampania.objects.bulk_create(res_list)
-
-    for n, res in enumerate(created_res):
+    for n, res in enumerate(resultados_creados):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
-    cons = contactosxcampa.objects.filter(campania = ID)
-    m,fechaActual = Medio.objects.get(pk=mId),date.today()
-    m_sms = m.smsmedio
+    # Optimize N+1 queries by fetching 'contacto' eagerly
+    cons = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
+
+    from .models import SMSMedio
+    m_sms = SMSMedio.objects.get(pk=mId)
+    fechaActual = date.today()
     txt = m_sms.mensaje
     numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
-    camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
 
+    # Bypass redundant get() for 'm' and 'camp' since we only need the foreign key IDs
     res_list = [
-        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        resultadosxcampania(contacto_cc=cons[n].contacto, campania_id_id=ID, medio_id_id=mId, fecha=fechaActual)
         for n in range(cant)
     ]
     created_res = resultadosxcampania.objects.bulk_create(res_list)
@@ -105,20 +101,29 @@ def envMensajeUsuarias(ID,mId):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
-    correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
-    m = Medio.objects.get(pk=mId)
-    camp = Campania.objects.get(pk = ID)
-    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
-    tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
+    # Optimize N+1 queries by fetching 'contacto' in the same query
+    # and reuse the same queryset for both emails and results.
+    usuariasCamp = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
+    correosUsuarios = [usuaria.contacto.email for usuaria in usuariasCamp]
+
+    # Bypass redundant get() for 'm' and 'camp' since we only need the foreign key IDs.
+    tipoRes = Tipo_resultado.objects.get(descripcion="si")
+    fechaActual = date.today()
 
     res_list = [
-        resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
-        for usuario in usuarios_campaña
+        resultadosxcampania(
+            contacto_cc=usuario.contacto,
+            campania_id_id=ID,
+            medio_id_id=mId,
+            fecha=fechaActual,
+            Tipo_resultado=tipoRes
+        )
+        for usuario in usuariasCamp
     ]
     resultadosxcampania.objects.bulk_create(res_list)
 
-    m_email = m.emailmedio
+    from .models import EmailMedio
+    m_email = EmailMedio.objects.get(pk=mId)
     send_mailgun_message(m_email.remitente, correosUsuarios, m_email.asunto, m_email.cuerpo)
 
 def send_message_via_smtp(from_, to, mime_string):
@@ -145,12 +150,13 @@ def send_mailgun_message(from_, to, subject, text, tag=None, track=True):
     send_message_via_smtp(from_, to, msg.as_string())
 
 def enviarWhatsapp(ID,mId):
-    usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID).select_related('contacto'),Campania.objects.get(pk = ID)
-    m,fechaActual = Medio.objects.get(pk=mId),date.today()
+    usuariasCamp = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
+    fechaActual = date.today()
 
     resultados = []
     for u in usuariasCamp:
-        res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        # Bypass redundant get() for 'm' and 'camp' since we only need the foreign key IDs.
+        res = resultadosxcampania(contacto_cc=u.contacto, campania_id_id=ID, medio_id_id=mId, fecha=fechaActual)
         res.save()
         newWhatsappClient.send_content_message(
             content_sid,
