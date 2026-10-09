@@ -1,0 +1,3 @@
+## 2025-02-28 - N+1 bottlenecks in list serialization and redundant ORM fetches
+**Learning:** `CampaignViewSet.list` suffered from severe N+1 queries when fetching `mediosxcampania` per campaign in a loop because DRF list views don't pre-serialize relational loops natively unless explicitly optimized. Furthermore, in `campaigns/setup.py`, assigning foreign keys explicitly with existing IDs avoids redundant `Model.objects.get()` lookups.
+**Action:** When serializing lists with related querysets iteratively, collect the foreign key IDs, do a single `.filter(__in=ids).select_related(...)`, and group into a `defaultdict` for fast in-memory lookups. For assignments of foreign keys where only the ID is needed, assign directly to the `<field_name>_id` attribute.
