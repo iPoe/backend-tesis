@@ -30,12 +30,29 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
-        for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
-            x.pop('operador_ID', None)
-            x.pop('Fecha_Creada', None)
-            medioSerializer = contactosxcampSerializer(mxc, many=True)
-            x['medios'] = medioSerializer.data
+
+        # ⚡ Bolt Optimization: Bulk fetch related mediosxcampania to prevent N+1 queries
+        if data:
+            campania_ids = [x['id'] for x in data]
+            from collections import defaultdict
+            mxc_by_campania = defaultdict(list)
+
+            # Fetch all medios for the campaigns in one query, selecting related medio_id and tipo_medio
+            mxc_queryset = mediosxcampania.objects.filter(
+                campania_id__in=campania_ids
+            ).select_related('medio_id', 'medio_id__tipo_medio')
+
+            for m in mxc_queryset:
+                # The field name in the model is exactly `campania_id`, so its implicit DB column is `campania_id_id`.
+                mxc_by_campania[m.campania_id_id].append(m)
+
+            for x in data:
+                mxc = mxc_by_campania.get(x['id'], [])
+                x.pop('operador_ID', None)
+                x.pop('Fecha_Creada', None)
+                medioSerializer = contactosxcampSerializer(mxc, many=True)
+                x['medios'] = medioSerializer.data
+
         return Response(data)
 
     def create(self, request, *args, **kwargs):

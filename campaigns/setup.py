@@ -25,9 +25,12 @@ class Camp_setup:
                     campania = self.camp.save()
                     if campania.estado.descripcion == 1:
                         contactos = self.serializerContactos.save()
+                        # ⚡ Bolt Optimization: Use the already in-memory 'campania' instance
+                        # instead of performing an N+1 query (Campania.objects.get) for every contacto.
                         objs = [contactosxcampa(
-                            campania = Campania.objects.get(pk = campania.id),
-                            contacto = contacto,nombreContactos=self.datacamp['nombreContactos'])
+                            campania=campania,
+                            contacto=contacto,
+                            nombreContactos=self.datacamp['nombreContactos'])
                             for contacto in contactos
                         ]
                         contactosxcampa.objects.bulk_create(objs)
@@ -44,9 +47,10 @@ class Camp_setup:
         data_medios = data
         try:
             with transaction.atomic():
-                idcam = Campania.objects.get(pk=ID).id
+                # ⚡ Bolt Optimization: Bypass redundant ORM fetch since the ID is already provided.
+                idcam = ID
                 for m in data_medios:
-                    m['campID']= idcam
+                    m['campID'] = idcam
                 crear_medio(data_medios)
         except Exception as e:
             print("exception Encountered in create media func")
