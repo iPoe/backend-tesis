@@ -118,20 +118,30 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from django.db.models import Q
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    try:
+        # ⚡ Bolt: Optimize N+1 queries by bulk fetching related medio and batch updating
+        from .models import mediosxcampania
+        mxcs = mediosxcampania.objects.filter(
+            campania_id__in=campanias,
+            medio_id__tipo_medio__descripcion=5
+        ).order_by('id')
+
+        if mxcs:
+            q_objects = Q()
+            seen_campanias = set()
+            for mxc in mxcs:
+                if mxc.campania_id_id not in seen_campanias:
+                    seen_campanias.add(mxc.campania_id_id)
+                    q_objects |= Q(campania_id=mxc.campania_id_id, medio_id=mxc.medio_id_id)
+
+            resultadosxcampania.objects.filter(
+                q_objects,
+                contacto_cc=usuaria.identidad,
+                fecha=fechaActual
+            ).update(Tipo_resultado=tipo_resultado)
+    except Exception as e:
+        print(f"Error updating result: {e}")

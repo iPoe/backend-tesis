@@ -1,0 +1,3 @@
+## 2024-05-18 - Replacing `.first()` loops with batch queries requires manual in-memory deduplication
+**Learning:** When resolving N+1 loops that process only the `.first()` matching relation per iteration (like `mediosxcampania.objects.filter(campania_id=campania).first()`), simply replacing it with a bulk `__in=` fetch and mapping the results to a `Q` object is unsafe if the relations can have duplicate matches.
+**Action:** When bulk optimizing `.first()` logic, manually iterate through the bulk-fetched queryset and use a Python tracking structure (like a `set` or a tracking dictionary keyed by the foreign key ID) to explicitly deduplicate the records in memory before executing the batch update/insert.
