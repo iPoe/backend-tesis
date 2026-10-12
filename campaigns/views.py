@@ -90,7 +90,8 @@ def reply_whatsapp(request):
         if not usuaria:
             return JsonResponse("User not found", status=404)
 
-        campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
+        # ⚡ Bolt: Select related 'campania' and 'campania__estado' to avoid N+1 queries when looping
+        campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria).select_related('campania', 'campania__estado')
         estado_activo = estado_campania.objects.get(descripcion=1)
         campañas_activas = [c.campania for c in campañas_usuaria if c.campania.estado == estado_activo]
 
@@ -118,20 +119,38 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from django.db.models import Q
+    from .models import mediosxcampania
+
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    try:
+        # ⚡ Bolt: Optimize N+1 in _cambiar_estado_bulk using bulk fetch and single update
+        mxc_list = mediosxcampania.objects.filter(
+            campania_id__in=campanias,
+            medio_id__tipo_medio__descripcion=5
+        ).select_related('medio_id')
+
+        # We need to map which medio_id belongs to which campania
+        campania_medio_map = {mxc.campania_id_id: mxc.medio_id_id for mxc in mxc_list}
+
+        if not campania_medio_map:
+            return
+
+        # Build query for bulk update
+        q_objects = Q()
+        for campania in campanias:
+            medio_id = campania_medio_map.get(campania.id)
+            if medio_id:
+                q_objects |= Q(campania_id=campania, medio_id=medio_id)
+
+        if q_objects:
+            resultadosxcampania.objects.filter(
+                q_objects,
+                contacto_cc=usuaria.identidad,
+                fecha=fechaActual
+            ).update(Tipo_resultado=tipo_resultado)
+
+    except Exception as e:
+        print(f"Error updating result: {e}")
