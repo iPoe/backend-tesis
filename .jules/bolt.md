@@ -1,0 +1,3 @@
+## 2025-02-28 - Optimized N+1 Query in CampaignViewSet
+**Learning:** In Django REST Framework list serializers, fetching related objects for each item in a list causes a severe N+1 query problem. This specific codebase architecture suffers from this in `CampaignViewSet.list`.
+**Action:** When overriding the list action to inject related object data, bulk fetch the related objects mapped by their parent ID using an `in` filter and a `collections.defaultdict`. Ensure to wrap the logic in an `if ids:` block to prevent bypassing downstream logic while avoiding unnecessary queries with an empty list.
