@@ -1,0 +1,3 @@
+## 2025-02-23 - DRF Serializer N+1 Loop Bottleneck
+**Learning:** In Django Rest Framework, iterating over `serializer.data` and making ORM `.filter()` calls inside the loop causes a severe N+1 problem (301 queries reduced to 2 for 100 items). The `contactosxcampSerializer` internally accesses `medio_id.tipo_medio`, which without `select_related` makes it worse.
+**Action:** Extract IDs from `serializer.data`, fetch all related models in a single query using `__in` with `.select_related()`, and group them in memory using `collections.defaultdict` mapped by the underlying integer ForeignKey attribute (e.g. `campania_id_id`).
