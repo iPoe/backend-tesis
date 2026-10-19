@@ -1,0 +1,3 @@
+## 2024-05-19 - Avoid N+1 in DRF list serialization by prefetching related
+**Learning:** In Django REST Framework, when a custom `list` method iterates over serialized items and issues database queries for related objects (`mediosxcampania.objects.filter(campania_id=x['id'])`), it creates a classic N+1 query problem. The number of queries grows linearly with the number of campaigns returned, severely impacting API performance on larger datasets.
+**Action:** Always bulk-fetch related models before the loop using `__in=ids` and `.select_related(...)`. Map the results in-memory using `collections.defaultdict(list)` indexed by the related ID, and assign them in the loop. This flattens the query count to O(1) regardless of the response size.
