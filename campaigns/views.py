@@ -118,20 +118,33 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from .models import mediosxcampania
+    from django.db.models import Q
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    try:
+        # ⚡ Bolt Optimization: Batch fetch WhatsApp media for active campaigns
+        # to avoid N+1 queries and execute a single combined .update()
+        campania_ids = [c.id for c in campanias]
+        medios_ws = mediosxcampania.objects.filter(
+            campania_id__in=campania_ids,
+            medio_id__tipo_medio__descripcion=5
+        ).values_list('campania_id', 'medio_id')
+
+        if not medios_ws:
+            return
+
+        query = Q()
+        for campania_id, medio_id in medios_ws:
+            query |= Q(campania_id=campania_id, medio_id=medio_id)
+
+        if query:
+            resultadosxcampania.objects.filter(
+                query,
+                contacto_cc=usuaria.identidad,
+                fecha=fechaActual
+            ).update(Tipo_resultado=tipo_resultado)
+
+    except Exception as e:
+        print(f"Error updating result: {e}")
