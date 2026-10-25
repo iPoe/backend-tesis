@@ -1,0 +1,3 @@
+## 2024-05-24 - Resolving N+1 query problem in _cambiar_estado_bulk
+**Learning:** Found an N+1 query bottleneck in the `_cambiar_estado_bulk` function in `campaigns/views.py`. The function iterates over campaigns and executes multiple DB queries per loop iteration to update objects, resulting in O(N) queries where N is the number of campaigns.
+**Action:** Replace the iterative DB query loop with a bulk `.filter()` fetch for `mediosxcampania` and a single `.update()` using combined `Q` objects, reducing the query count from O(N) to O(1) (specifically from 7 to 3 queries for 2 items in our testing, with constant growth).
