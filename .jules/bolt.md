@@ -1,0 +1,3 @@
+## 2024-05-18 - Optimized Bulk Result Updates
+**Learning:** Found an N+1 query bottleneck in `campaigns/views.py` `_cambiar_estado_bulk`. It iterated through each campaign, fetched its WhatsApp media configuration, and then updated the `resultadosxcampania` individually. This caused 3 queries per campaign.
+**Action:** Replaced it with a single `.filter(campania_id__in=..., medio_id__tipo_medio__descripcion=5).values_list('campania_id_id', 'medio_id_id')` to fetch media configs, then built a combined `Q` object to execute a single bulk `update()` query, turning an O(n) loop of queries into a constant 3 queries regardless of the number of campaigns.
