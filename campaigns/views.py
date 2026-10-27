@@ -90,7 +90,8 @@ def reply_whatsapp(request):
         if not usuaria:
             return JsonResponse("User not found", status=404)
 
-        campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
+        # ⚡ Bolt: Prevent N+1 query on campania and estado by using select_related
+        campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria).select_related('campania', 'campania__estado')
         estado_activo = estado_campania.objects.get(descripcion=1)
         campañas_activas = [c.campania for c in campañas_usuaria if c.campania.estado == estado_activo]
 
@@ -118,20 +119,29 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from django.db.models import Q
+    from .models import mediosxcampania
+
+    if not campanias:
+        return
+
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
+    campania_ids = [c.id for c in campanias]
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    # ⚡ Bolt: Replace iterative loop with a bulk fetch and a single update using combined Q objects to prevent N+1 bottleneck
+    mxc_list = mediosxcampania.objects.filter(
+        campania_id__in=campania_ids,
+        medio_id__tipo_medio__descripcion=5
+    ).values_list('campania_id', 'medio_id')
+
+    if mxc_list:
+        query = Q()
+        for camp_id, medio_id in mxc_list:
+            query |= Q(campania_id=camp_id, medio_id=medio_id)
+
+        resultadosxcampania.objects.filter(
+            query,
+            contacto_cc=usuaria.identidad,
+            fecha=fechaActual
+        ).update(Tipo_resultado=tipo_resultado)
