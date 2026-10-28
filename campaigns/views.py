@@ -118,20 +118,40 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from django.db.models import Q
+    from .models import mediosxcampania
+
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
+    # ⚡ Bolt: Bulk fetch all WhatsApp media mappings for the active campaigns in a single query
+    # We must iterate over them in Python to preserve the original `.first()` deduplication logic per campaign.
+    mxc_qs = mediosxcampania.objects.filter(
+        campania_id__in=campanias,
+        medio_id__tipo_medio__descripcion=5
+    ).select_related('campania_id', 'medio_id')
+
+    mxc_list = list(mxc_qs)
+    if not mxc_list:
+        return
+
+    # Manually deduplicate to match the original `.first()` behavior
+    seen_campaigns = set()
+    q_objects = Q()
+    has_updates = False
+
+    for mxc in mxc_list:
+        if mxc.campania_id_id not in seen_campaigns:
+            seen_campaigns.add(mxc.campania_id_id)
+            q_objects |= Q(campania_id=mxc.campania_id, medio_id=mxc.medio_id)
+            has_updates = True
+
+    if has_updates:
         try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
+            resultadosxcampania.objects.filter(
+                q_objects,
+                contacto_cc=usuaria.identidad,
+                fecha=fechaActual
+            ).update(Tipo_resultado=tipo_resultado)
         except Exception as e:
             print(f"Error updating result: {e}")
