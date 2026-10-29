@@ -90,9 +90,9 @@ def reply_whatsapp(request):
         if not usuaria:
             return JsonResponse("User not found", status=404)
 
-        campañas_usuaria = contactosxcampa.objects.filter(contacto=usuaria)
-        estado_activo = estado_campania.objects.get(descripcion=1)
-        campañas_activas = [c.campania for c in campañas_usuaria if c.campania.estado == estado_activo]
+        # ⚡ Bolt: Use select_related to avoid N+1 queries when accessing c.campania.estado
+        campañas_usuaria = contactosxcampa.objects.select_related('campania', 'campania__estado').filter(contacto=usuaria)
+        campañas_activas = [c.campania for c in campañas_usuaria if getattr(c.campania.estado, 'descripcion', None) == 1]
 
         if len(campañas_activas) > 0:
             mensaje_body = request.POST.get("Body", "")
@@ -118,20 +118,38 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from django.db.models import Q
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
+    if not campanias:
+        return
+
+    campania_ids = [c.id for c in campanias]
+
+    # ⚡ Bolt: Bulk fetch medios and use Q objects to eliminate N+1 queries in update
+    # We use a tracking dict to emulate the .first() behavior from the original loop
+    from .models import mediosxcampania
+    medios = mediosxcampania.objects.filter(
+        campania_id__in=campania_ids,
+        medio_id__tipo_medio__descripcion=5
+    )
+
+    q_objects = Q()
+    processed_campaigns = set()
+
+    for mxc in medios:
+        if mxc.campania_id_id not in processed_campaigns:
+            processed_campaigns.add(mxc.campania_id_id)
+            q_objects |= Q(
+                contacto_cc=usuaria.identidad,
+                campania_id=mxc.campania_id_id,
+                medio_id=mxc.medio_id_id,
+                fecha=fechaActual
+            )
+
+    if q_objects:
         try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
+            resultadosxcampania.objects.filter(q_objects).update(Tipo_resultado=tipo_resultado)
         except Exception as e:
             print(f"Error updating result: {e}")
