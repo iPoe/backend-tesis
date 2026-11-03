@@ -1,0 +1,3 @@
+## 2024-11-03 - N+1 query optimization in DRF list serialization
+**Learning:** When adding related fields to a DRF list response by iterating over `serializer.data` and making separate `.filter(fk=id)` calls per item, it results in an N+1 query problem that scales linearly with the response size.
+**Action:** Instead of iterating and querying individually, extract all related IDs from `serializer.data` first. Execute a single bulk fetch using `.filter(fk__in=ids).select_related(...)` wrapped in an `if ids:` check, and map the results in-memory using `collections.defaultdict(list)` grouped by the underlying integer ForeignKey attribute.
