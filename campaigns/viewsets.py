@@ -1,3 +1,4 @@
+from collections import defaultdict
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -30,11 +31,20 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
+
+        # ⚡ Bolt Optimization: Batch fetch all related medios to avoid N+1 queries
+        ids = [x['id'] for x in data]
+        medios_by_camp = defaultdict(list)
+        if ids:
+            all_medios = mediosxcampania.objects.filter(campania_id__in=ids).select_related('medio_id__tipo_medio')
+            for mxc in all_medios:
+                medios_by_camp[mxc.campania_id_id].append(mxc)
+
         for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
             x.pop('operador_ID', None)
             x.pop('Fecha_Creada', None)
-            medioSerializer = contactosxcampSerializer(mxc, many=True)
+            mxc_list = medios_by_camp[x['id']]
+            medioSerializer = contactosxcampSerializer(mxc_list, many=True)
             x['medios'] = medioSerializer.data
         return Response(data)
 
