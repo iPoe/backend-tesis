@@ -1,0 +1,3 @@
+## 2024-11-06 - [Bulk Insert vs External APIs]
+**Learning:** Attempting to `bulk_create` tracking records *before* executing side effects (like API calls) introduces data inconsistency risks in distributed tasks. The original loop in `enviarWhatsapp` correctly saved the record immediately before the API call to prevent phantom records in case of failure.
+**Action:** Do not decouple the database write from the API side effect in an attempt to optimize if it fundamentally alters error handling. Focus on safer query optimizations like deduplicating redundant `contactosxcampa.objects.filter` calls and using `select_related()` in functions like `enviar_correos`.
