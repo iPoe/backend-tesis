@@ -1,0 +1,3 @@
+## 2024-05-18 - Bulk fetching with serializer.data
+**Learning:** When trying to avoid N+1 queries in DRF endpoints that append related data to `serializer.data` manually, directly filtering using `__in=ids` inside the loop causes redundant DB hits. Moreover, early returns to avoid filtering on empty IDs bypass downstream logic.
+**Action:** Extract all IDs from `serializer.data`, explicitly wrap the `__in` bulk query in an `if ids:` block (without early returns), use `.select_related()` if traversing further relationships, and use an in-memory map (like `collections.defaultdict`) keyed by the integer `id` attribute.
