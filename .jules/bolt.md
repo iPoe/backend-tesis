@@ -1,0 +1,3 @@
+## 2025-02-18 - Optimize redundant queries in Celery Tasks
+**Learning:** Found an N+1 query problem and redundant foreign key fetches in Celery tasks (`campaigns/tasks.py`) that construct models inside loops or refetch records instead of using the raw underlying ID fields. `llamar_usuarias` additionally attempted to use `numerosUsuarias` before it was defined.
+**Action:** Always prefetch related entities in bulk contexts using `select_related()` and bypass redundant `.get()` queries for known ForeignKeys by assigning directly to the `_id` suffixed model field attributes (e.g. `campania_id_id=ID`).
