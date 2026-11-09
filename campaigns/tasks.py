@@ -53,15 +53,15 @@ def crearTareacampaigns(campId, hora, minute, mId, tel=""):
         CampaignTask.objects.create(campania=cam, periodic_task_id=periodic_task.id, medio=m)
 
 def llamar_usuarias(ID, mId, tel=''):
+    # Bolt optimization: Add select_related for voicemedio, bypass redundant campania fetch
     cons = contactosxcampa.objects.filter(campania=ID).select_related('contacto')
-    m = Medio.objects.get(pk=mId)
+    m = Medio.objects.select_related('voicemedio').get(pk=mId)
     fechaActual = date.today()
-    camp = Campania.objects.get(pk=ID)
 
     resultados = [
         resultadosxcampania(
             contacto_cc=obj.contacto,
-            campania_id=camp,
+            campania_id_id=ID,
             medio_id=m,
             fecha=fechaActual
         )
@@ -74,11 +74,11 @@ def llamar_usuarias(ID, mId, tel=''):
     matchUrlAudio = True if m_voice.audio_file else False
     mensajeVoz = m_voice.mensaje_texto
     urlAUdio = m_voice.audio_file.url if matchUrlAudio else ''
-    camp = Campania.objects.get(pk = ID)
+    numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
     cant = len(numerosUsuarias)
 
     res_list = [
-        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id_id=ID,medio_id=m,fecha=fechaActual)
         for n in range(cant)
     ]
     created_res = resultadosxcampania.objects.bulk_create(res_list)
@@ -87,16 +87,16 @@ def llamar_usuarias(ID, mId, tel=''):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
-    cons = contactosxcampa.objects.filter(campania = ID)
-    m,fechaActual = Medio.objects.get(pk=mId),date.today()
+    # Bolt optimization: Add select_related, prefetch smsmedio, remove redundant campania fetch
+    cons = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
+    m,fechaActual = Medio.objects.select_related('smsmedio').get(pk=mId),date.today()
     m_sms = m.smsmedio
     txt = m_sms.mensaje
     numerosUsuarias = ["+57"+obj.contacto.celular for obj in cons]
-    camp = Campania.objects.get(pk = ID)
     cant = len(numerosUsuarias)
 
     res_list = [
-        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        resultadosxcampania(contacto_cc=cons[n].contacto,campania_id_id=ID,medio_id=m,fecha=fechaActual)
         for n in range(cant)
     ]
     created_res = resultadosxcampania.objects.bulk_create(res_list)
@@ -105,16 +105,15 @@ def envMensajeUsuarias(ID,mId):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    # Bolt optimization: Add select_related to fix N+1, remove redundant queryset, bypass redundant campania fetch
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
-    m = Medio.objects.get(pk=mId)
-    camp = Campania.objects.get(pk = ID)
-    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
+    m = Medio.objects.select_related('emailmedio').get(pk=mId)
     tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
 
     res_list = [
-        resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
-        for usuario in usuarios_campaña
+        resultadosxcampania(contacto_cc = usuario.contacto, campania_id_id = ID, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
+        for usuario in usuariasCamp
     ]
     resultadosxcampania.objects.bulk_create(res_list)
 
@@ -145,12 +144,13 @@ def send_mailgun_message(from_, to, subject, text, tag=None, track=True):
     send_message_via_smtp(from_, to, msg.as_string())
 
 def enviarWhatsapp(ID,mId):
-    usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID).select_related('contacto'),Campania.objects.get(pk = ID)
+    # Bolt optimization: Remove redundant campania fetch, bypass redundant assignment of related objects
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
 
     resultados = []
     for u in usuariasCamp:
-        res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)
+        res = resultadosxcampania(contacto_cc=u.contacto,campania_id_id=ID,medio_id=m,fecha=fechaActual)
         res.save()
         newWhatsappClient.send_content_message(
             content_sid,
