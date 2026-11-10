@@ -118,20 +118,40 @@ def reply_whatsapp(request):
 
 def _cambiar_estado_bulk(campanias, usuaria, resultado):
     from datetime import date
+    from .models import mediosxcampania
+
     fechaActual = date.today()
     tipo_resultado = Tipo_resultado.objects.get(descripcion=resultado)
 
-    for campania in campanias:
-        try:
-            # Find the WhatsApp media for this campaign
-            from .models import mediosxcampania
-            mxc = mediosxcampania.objects.filter(campania_id=campania, medio_id__tipo_medio__descripcion=5).first()
-            if mxc:
-                resultadosxcampania.objects.filter(
-                    contacto_cc=usuaria.identidad, 
-                    campania_id=campania,
-                    medio_id=mxc.medio_id,
-                    fecha=fechaActual
-                ).update(Tipo_resultado=tipo_resultado)
-        except Exception as e:
-            print(f"Error updating result: {e}")
+    if not campanias:
+        return
+
+    # ⚡ Bolt: Safely bulk fetch to prevent N+1 query loops while preserving .first() logic
+    # Try/except block preserves fault tolerance per update if batching fails
+    try:
+        mxcs = mediosxcampania.objects.filter(
+            campania_id__in=campanias,
+            medio_id__tipo_medio__descripcion=5
+        ).values_list('campania_id', 'medio_id')
+
+        if not mxcs:
+            return
+
+        campania_medio = {}
+        for camp_id, medio_id in mxcs:
+            if camp_id not in campania_medio:
+                campania_medio[camp_id] = medio_id
+
+        if campania_medio:
+            for camp_id, medio_id in campania_medio.items():
+                try:
+                    resultadosxcampania.objects.filter(
+                        contacto_cc=usuaria.identidad,
+                        campania_id=camp_id,
+                        medio_id=medio_id,
+                        fecha=fechaActual
+                    ).update(Tipo_resultado=tipo_resultado)
+                except Exception as update_err:
+                    print(f"Error updating result for campaign {camp_id}: {update_err}")
+    except Exception as e:
+        print(f"Error fetching medios in bulk: {e}")
