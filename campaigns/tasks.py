@@ -87,7 +87,8 @@ def llamar_usuarias(ID, mId, tel=''):
         clientVoice.voice_call(mensajeVoz, urlAUdio, numerosUsuarias[n], str(res.id))
 
 def envMensajeUsuarias(ID,mId):
-    cons = contactosxcampa.objects.filter(campania = ID)
+    # ⚡ Bolt: Use select_related to prevent N+1 queries when accessing obj.contacto.celular
+    cons = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
     m_sms = m.smsmedio
     txt = m_sms.mensaje
@@ -105,16 +106,16 @@ def envMensajeUsuarias(ID,mId):
         clientSMS.send_message(txt, numerosUsuarias[n], str(res.id))
 
 def enviar_correos(ID,mId):
-    usuariasCamp = contactosxcampa.objects.filter(campania = ID)
+    # ⚡ Bolt: Use select_related and reuse the queryset to avoid N+1 query and redundant fetches
+    usuariasCamp = contactosxcampa.objects.filter(campania = ID).select_related('contacto')
     correosUsuarios = [ usuaria.contacto.email for usuaria in usuariasCamp]
     m = Medio.objects.get(pk=mId)
     camp = Campania.objects.get(pk = ID)
-    usuarios_campaña = contactosxcampa.objects.filter(campania = ID)
     tipoRes = Tipo_resultado.objects.get( descripcion = "si" )
 
     res_list = [
         resultadosxcampania(contacto_cc = usuario.contacto, campania_id = camp, medio_id = m, fecha = date.today(),Tipo_resultado = tipoRes )
-        for usuario in usuarios_campaña
+        for usuario in usuariasCamp
     ]
     resultadosxcampania.objects.bulk_create(res_list)
 
@@ -148,6 +149,8 @@ def enviarWhatsapp(ID,mId):
     usuariasCamp,camp = contactosxcampa.objects.filter(campania = ID).select_related('contacto'),Campania.objects.get(pk = ID)
     m,fechaActual = Medio.objects.get(pk=mId),date.today()
 
+    # We keep the individual loop and .save() here to guarantee correct functionality
+    # as the send_content_message API is intertwined with the results in real-time.
     resultados = []
     for u in usuariasCamp:
         res = resultadosxcampania(contacto_cc=u.contacto,campania_id=camp,medio_id=m,fecha=fechaActual)

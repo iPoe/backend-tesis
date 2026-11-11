@@ -30,8 +30,22 @@ class CampaignViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
+
+        # ⚡ Bolt: Bulk fetch mediosxcampania with select_related to prevent N+1 queries
+        ids = [x['id'] for x in data]
+        if ids:
+            from collections import defaultdict
+            all_mxc = mediosxcampania.objects.filter(
+                campania_id__in=ids
+            ).select_related('medio_id__tipo_medio')
+            mxc_map = defaultdict(list)
+            for m in all_mxc:
+                mxc_map[m.campania_id_id].append(m)
+        else:
+            mxc_map = {}
+
         for x in data:
-            mxc = mediosxcampania.objects.filter(campania_id=x['id'])
+            mxc = mxc_map.get(x['id'], [])
             x.pop('operador_ID', None)
             x.pop('Fecha_Creada', None)
             medioSerializer = contactosxcampSerializer(mxc, many=True)
@@ -130,14 +144,20 @@ class CampaignViewSet(viewsets.ModelViewSet):
 
             if len(resultados) > 0:
                 listausers = []
+                # ⚡ Bolt: Bulk fetch all related Contacto objects to prevent N+1 queries in the loop
+                contacto_ids = list(set(r['contacto_cc'] for r in resultados))
+                contactos_bulk = Contacto.objects.in_bulk(contacto_ids, field_name='identidad')
+
                 contacantiguo = resultados[0]['contacto_cc']
                 dicresxmed = {}
                 i = 1
                 for res in resultados:
                     if res['contacto_cc'] != contacantiguo:
-                        contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
-                        dicfinal = {**contSer.data, **dicresxmed}
-                        listausers.append(dicfinal)
+                        contacto = contactos_bulk.get(contacantiguo)
+                        if contacto:
+                            contSer = ContactosSerializer(contacto)
+                            dicfinal = {**contSer.data, **dicresxmed}
+                            listausers.append(dicfinal)
                         dicresxmed, i = {}, 1
                     
                     strMedio = f"medio_{i}"
@@ -149,9 +169,12 @@ class CampaignViewSet(viewsets.ModelViewSet):
                     contacantiguo = res['contacto_cc']
                     i += 1
 
-                contSer = ContactosSerializer(Contacto.objects.get(identidad=contacantiguo))
-                dicfinal = {**contSer.data, **dicresxmed}
-                listausers.append(dicfinal)
+                contacto = contactos_bulk.get(contacantiguo)
+                if contacto:
+                    contSer = ContactosSerializer(contacto)
+                    dicfinal = {**contSer.data, **dicresxmed}
+                    listausers.append(dicfinal)
+
                 dataest['estadistica'] = listausers
             else:
                 dataest['estadistica'] = []
@@ -165,7 +188,11 @@ class CampaignViewSet(viewsets.ModelViewSet):
         if users.exists():
             data['nombreContactos'] = users[0].nombreContactos
         
-        mxc = mediosxcampania.objects.filter(campania_id=instance)
+        # ⚡ Bolt: Use select_related to bulk fetch related objects instead of N+1 on medio_id relationships
+        mxc = mediosxcampania.objects.filter(
+            campania_id=instance
+        ).select_related('medio_id__tipo_medio', 'medio_id__smsmedio', 'medio_id__whatsappmedio')
+
         lista_medios = []
         for m in mxc:
             dicMedio = {
